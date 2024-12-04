@@ -23,22 +23,6 @@ module Fastlane
         UI.success("Finished Maestro tests on Android.")
       end
 
-    #   def self.boot_android_emulator(emulator_name)
-    #     UI.message("Booting Android emulator: #{emulator_name}")
-    #     sh("adb start-server")
-    #     sh("emulator -avd #{emulator_name} &")
-
-    #     loop do
-    #       status = `adb shell getprop sys.boot_completed`.strip
-    #       break if status == '1'
-
-    #       UI.message("Waiting for Android emulator to finish booting...")
-    #       sleep(2)
-    #     end
-
-    #     UI.success("Android emulator '#{emulator_name}' is booted.")
-    #   end
-
       def self.build_and_install_android_app(params)
         UI.message("Building Android app...")
         sh("./gradlew assembleDebug")
