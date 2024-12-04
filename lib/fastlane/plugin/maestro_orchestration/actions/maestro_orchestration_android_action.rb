@@ -1,10 +1,20 @@
 require 'fastlane/action'
+require 'fastlane/plugin/android_emulator'
 
 module Fastlane
   module Actions
     class MaestroOrchestrationAndroidAction < Action
       def self.run(params)
-        boot_android_emulator(params[:android_emulator_name])
+        Fastlane::Actions::AndroidEmulatorAction.run(
+          name: params[:android_emulator_name],
+          sdk_dir: params[:sdk_dir],
+          package: params[:emulator_package],
+          device: params[:emulator_device],
+          demo_mode: params[:emulator_demo_mode],
+          port: params[:emulator_port],
+          cold_boot: params[:emulator_cold_boot],
+          additional_options: params[:emulator_additional_options]
+        )
         build_and_install_android_app(params)
 
         UI.message("Running Maestro tests on Android...")
@@ -13,21 +23,21 @@ module Fastlane
         UI.success("Finished Maestro tests on Android.")
       end
 
-      def self.boot_android_emulator(emulator_name)
-        UI.message("Booting Android emulator: #{emulator_name}")
-        sh("adb start-server")
-        sh("emulator -avd #{emulator_name} &")
+    #   def self.boot_android_emulator(emulator_name)
+    #     UI.message("Booting Android emulator: #{emulator_name}")
+    #     sh("adb start-server")
+    #     sh("emulator -avd #{emulator_name} &")
 
-        loop do
-          status = `adb shell getprop sys.boot_completed`.strip
-          break if status == '1'
+    #     loop do
+    #       status = `adb shell getprop sys.boot_completed`.strip
+    #       break if status == '1'
 
-          UI.message("Waiting for Android emulator to finish booting...")
-          sleep(2)
-        end
+    #       UI.message("Waiting for Android emulator to finish booting...")
+    #       sleep(2)
+    #     end
 
-        UI.success("Android emulator '#{emulator_name}' is booted.")
-      end
+    #     UI.success("Android emulator '#{emulator_name}' is booted.")
+    #   end
 
       def self.build_and_install_android_app(params)
         UI.message("Building Android app...")
@@ -54,18 +64,76 @@ module Fastlane
 
       def self.available_options
         [
-          FastlaneCore::ConfigItem.new(
-            key: :android_emulator_name,
-            description: "The Android emulator name",
-            optional: false,
-            type: String
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :maestro_flows,
-            description: "The path to the Maestro flows YAML file",
-            optional: false,
-            type: String
-          )
+            FastlaneCore::ConfigItem.new(
+                key: :sdk_dir,
+                env_name: "ANDROID_SDK_DIR",
+                description: "Path to the Android SDK DIR",
+                default_value: ENV['ANDROID_HOME'] || ENV['ANDROID_SDK_ROOT'] || ENV['ANDROID_SDK'],
+                optional: false,
+                verify_block: proc do |value|
+                    UI.user_error!("No ANDROID_SDK_DIR given, pass using `sdk_dir: 'sdk_dir'`") unless value and !value.empty? 
+                end
+                ),
+            FastlaneCore::ConfigItem.new(
+                key: :emulator_package,
+                env_name: "AVD_PACKAGE",
+                description: "The selected system image of the emulator",
+                optional: false
+                ),
+            FastlaneCore::ConfigItem.new(
+                key: :android_emulator_name,
+                env_name: "AVD_NAME",
+                description: "Name of the AVD",
+                default_value: "fastlane",
+                optional: false
+                ),
+            FastlaneCore::ConfigItem.new(
+                key: :emulator_device,
+                env_name: "AVD_DEVICE",
+                description: "Device",
+                default_value: "Nexus 5",
+                optional: false
+                ),
+            FastlaneCore::ConfigItem.new(
+                key: :emulator_port,
+                env_name: "AVD_PORT",
+                description: "Port of the emulator",
+                default_value: "5554",
+                optional: false
+                ),
+            FastlaneCore::ConfigItem.new(
+                key: :location,
+                env_name: "AVD_LOCATION",
+                description: "Set location of the emulator '<longitude> <latitude>'",
+                optional: true
+                ),
+            FastlaneCore::ConfigItem.new(
+                key: :emulator_demo_mode,
+                env_name: "AVD_DEMO_MODE",
+                description: "Set the emulator in demo mode",
+                is_string: false,
+                default_value: true
+                ),
+            FastlaneCore::ConfigItem.new(
+                key: :emulator_cold_boot,
+                env_name: "AVD_COLD_BOOT",
+                description: "Create a new AVD every run",
+                is_string: false,
+                default_value: false
+                ),
+            FastlaneCore::ConfigItem.new(key: :emulator_additional_options,
+                env_name: "AVD_ADDITIONAL_OPTIONS",
+                description: "Set additional options of the emulation",
+                type: Array,
+                is_string: false,
+                optional: true
+                ),
+            FastlaneCore::ConfigItem.new(
+                key: :maestro_flows,
+                description: "The path to the Maestro flows YAML file",
+                optional: false,
+                type: String
+                ),
         ]
       end
 
