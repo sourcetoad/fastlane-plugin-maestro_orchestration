@@ -15,7 +15,17 @@ module Fastlane
           cold_boot: params[:emulator_cold_boot],
           additional_options: params[:emulator_additional_options]
         )
+        
+        build_and_install_android_app(params)
+        
 
+        UI.message("Running Maestro tests on Android...")
+        sh("maestro test #{params[:maestro_flows]}")
+
+        UI.success("Finished Maestro tests on Android.")
+      end
+
+      def self.build_and_install_android_app(params)
         UI.message("Building Android app...")
         other_action.gradle(task: "assembleDebug")
 
@@ -28,11 +38,6 @@ module Fastlane
         UI.message("Found APK file at: #{apk_path}")
         sh("adb install -r '#{apk_path}'")
         UI.success("APK installed on Android emulator.")
-
-        UI.message("Running Maestro tests on Android...")
-        sh("maestro test #{params[:maestro_flows]}")
-
-        UI.success("Finished Maestro tests on Android.")
       end
 
       def self.description
