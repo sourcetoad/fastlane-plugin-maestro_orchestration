@@ -66,32 +66,32 @@ module Fastlane
         "Boots an iOS simulator, builds the app, installs it, and runs Maestro tests"
       end
 
-      def self.authors
-        ["Your Name"]
-      end
-
       def self.available_options
         [
           FastlaneCore::ConfigItem.new(
             key: :simulator_device,
+            env_name: "MAESTRO_IOS_DEVICE",
             description: "The iOS simulator device to boot",
             optional: false,
             type: String
           ),
           FastlaneCore::ConfigItem.new(
             key: :scheme,
+            env_name: "MAESTRO_IOS_SCHEME",
             description: "The iOS app scheme to build",
             optional: false,
             type: String
           ),
           FastlaneCore::ConfigItem.new(
             key: :workspace,
+            env_name: "MAESTRO_IOS_WORKSPACE",
             description: "The Xcode workspace",
             optional: false,
             type: String
           ),
           FastlaneCore::ConfigItem.new(
-            key: :maestro_flows,
+            key: :maestro_flow_file,
+            env_name: "MAESTRO_IOS_FLOW_FILE",
             description: "The path to the Maestro flows YAML file",
             optional: false,
             type: String
