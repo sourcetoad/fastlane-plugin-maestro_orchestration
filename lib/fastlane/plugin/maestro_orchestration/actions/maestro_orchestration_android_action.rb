@@ -20,9 +20,14 @@ module Fastlane
         
 
         UI.message("Running Maestro tests on Android...")
-        sh("maestro test #{params[:maestro_flows]}")
+        sh("maestro test #{params[:maestro_flow_file]}")
 
         UI.success("Finished Maestro tests on Android.")
+
+        UI.message("Killing Android emulator...")
+        adb = "#{params[:sdk_dir]}/platform-tools/adb"
+        system("#{adb} emu kill")
+        UI.success("Android emulator killed. Process finished.")
       end
 
       def self.build_and_install_android_app(params)
@@ -112,7 +117,7 @@ module Fastlane
                 ),
             FastlaneCore::ConfigItem.new(
                 key: :maestro_flow_file,
-                env_name: "MAESTRO_ANDROID_FLOW_FILE"
+                env_name: "MAESTRO_ANDROID_FLOW_FILE",
                 description: "The path to the Maestro flow YAML file",
                 optional: false,
                 type: String

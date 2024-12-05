@@ -9,7 +9,7 @@ module Fastlane
         build_and_install_ios_app(params)
 
         UI.message("Running Maestro tests on iOS...")
-        `maestro test #{params[:maestro_flows]}`
+        `maestro test #{params[:maestro_flow_file]}`
         UI.success("Finished Maestro tests on iOS.")
       end
 
