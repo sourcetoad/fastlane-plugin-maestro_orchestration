@@ -6,14 +6,13 @@ module Fastlane
     class MaestroOrchestrationAndroidAction < Action
       def self.run(params)
         Fastlane::Actions::AndroidEmulatorAction.run(
-          name: params[:android_emulator_name],
+          name: params[:emulator_name],
           sdk_dir: params[:sdk_dir],
           package: params[:emulator_package],
           device: params[:emulator_device],
-          demo_mode: params[:emulator_demo_mode],
           port: params[:emulator_port],
-          cold_boot: params[:emulator_cold_boot],
-          additional_options: params[:emulator_additional_options]
+          demo_mode: true,
+          cold_boot: true,
         )
         
         build_and_install_android_app(params)
@@ -26,7 +25,7 @@ module Fastlane
 
         UI.message("Killing Android emulator...")
         adb = "#{params[:sdk_dir]}/platform-tools/adb"
-        system("#{adb} emu kill")
+        system("#{adb} emu kill") 
         UI.success("Android emulator killed. Process finished.")
       end
 
@@ -67,7 +66,7 @@ module Fastlane
                 optional: false
                 ),
             FastlaneCore::ConfigItem.new(
-                key: :android_emulator_name,
+                key: :emulator_name,
                 env_name: "MAESTRO_AVD_NAME",
                 description: "Name of the AVD",
                 default_value: "fastlane",
@@ -91,28 +90,6 @@ module Fastlane
                 key: :location,
                 env_name: "MAESTRO_AVD_LOCATION",
                 description: "Set location of the emulator '<longitude> <latitude>'",
-                optional: true
-                ),
-            FastlaneCore::ConfigItem.new(
-                key: :emulator_demo_mode,
-                env_name: "MAESTRO_AVD_DEMO_MODE",
-                description: "Set the emulator in demo mode",
-                is_string: false,
-                default_value: true
-                ),
-            FastlaneCore::ConfigItem.new(
-                key: :emulator_cold_boot,
-                env_name: "MAESTRO_AVD_COLD_BOOT",
-                description: "Create a new AVD every run",
-                is_string: false,
-                default_value: false
-                ),
-            FastlaneCore::ConfigItem.new(
-                key: :emulator_additional_options,
-                env_name: "MAESTRO_AVD_ADDITIONAL_OPTIONS",
-                description: "Set additional options of the emulation",
-                type: Array,
-                is_string: false,
                 optional: true
                 ),
             FastlaneCore::ConfigItem.new(
