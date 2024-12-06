@@ -1,4 +1,6 @@
 require 'fastlane/action'
+require 'fastlane_core/configuration/config_item'
+require_relative '../helper/maestro_orchestration_helper'
 
 module Fastlane
   module Actions
