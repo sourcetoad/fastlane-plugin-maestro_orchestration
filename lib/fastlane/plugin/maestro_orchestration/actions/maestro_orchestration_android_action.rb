@@ -7,7 +7,7 @@ module Fastlane
   module Actions
     class MaestroOrchestrationAndroidAction < Action
       def self.run(params)
-        required_params = [:emulator_name, :sdk_dir, :emulator_package, :emulator_device, :emulator_port, :maestro_flow_file]
+        required_params = [:emulator_package, :emulator_device, :maestro_flow_file]
         missing_params = required_params.select { |param| params[param].nil? }
 
         if missing_params.any?
@@ -17,12 +17,15 @@ module Fastlane
           raise "Missing required parameters: #{missing_params.join(', ')}"
         end
 
+        sdk_dir = "~/Library/Android/sdk"
+        adb = "#{sdk_dir}/platform-tools/adb"
+
         Fastlane::Actions::AndroidEmulatorAction.run(
-          name: params[:emulator_name],
-          sdk_dir: params[:sdk_dir],
+          name: "Test_Emulator",
+          sdk_dir: sdk_dir,
           package: params[:emulator_package],
           device: params[:emulator_device],
-          port: params[:emulator_port],
+          port: "5554",
           demo_mode: false,
           cold_boot: true,
           additional_options: []
@@ -36,7 +39,6 @@ module Fastlane
         UI.success("Finished Maestro tests on Android.")
 
         UI.message("Exit demo mode and kill Android emulator...")
-        adb = "#{params[:sdk_dir]}/platform-tools/adb"
         system("#{adb} shell am broadcast -a com.android.systemui.demo -e command exit")
         sleep(3)
         system("#{adb} emu kill")
@@ -44,16 +46,18 @@ module Fastlane
       end
 
       def self.demo_mode(params)
+        sdk_dir = "~/Library/Android/sdk"
+
         UI.message("Checking and allowing demo mode on Android emulator...")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell settings put global sysui_demo_allowed 1")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell settings get global sysui_demo_allowed")
+        sh("#{sdk_dir}/platform-tools/adb shell settings put global sysui_demo_allowed 1")
+        sh("#{sdk_dir}/platform-tools/adb shell settings get global sysui_demo_allowed")
 
         UI.message("Setting demo mode commands...")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command enter")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command battery -e level 100")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4")
+        sh("#{sdk_dir}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command enter")
+        sh("#{sdk_dir}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200")
+        sh("#{sdk_dir}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command battery -e level 100")
+        sh("#{sdk_dir}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4")
+        sh("#{sdk_dir}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4")
       end
 
       def self.build_and_install_android_app(params)
@@ -78,25 +82,9 @@ module Fastlane
       def self.available_options
         [
           FastlaneCore::ConfigItem.new(
-            key: :sdk_dir,
-            env_name: "MAESTRO_ANDROID_SDK_DIR",
-            description: "Path to the Android SDK DIR",
-            optional: false,
-            verify_block: proc do |value|
-              UI.user_error!("No ANDROID_SDK_DIR given, pass using `sdk_dir: 'sdk_dir'`") unless value && !value.empty?
-            end
-          ),
-          FastlaneCore::ConfigItem.new(
             key: :emulator_package,
             env_name: "MAESTRO_AVD_PACKAGE",
             description: "The selected system image of the emulator",
-            optional: false
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :emulator_name,
-            env_name: "MAESTRO_AVD_NAME",
-            description: "Name of the AVD",
-            default_value: "fastlane",
             optional: false
           ),
           FastlaneCore::ConfigItem.new(
@@ -104,13 +92,6 @@ module Fastlane
             env_name: "MAESTRO_AVD_DEVICE",
             description: "Device",
             default_value: "Nexus 5",
-            optional: false
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :emulator_port,
-            env_name: "MAESTRO_AVD_PORT",
-            description: "Port of the emulator",
-            default_value: "5554",
             optional: false
           ),
           FastlaneCore::ConfigItem.new(

@@ -54,28 +54,14 @@ describe Fastlane::Actions::MaestroOrchestrationAndroidAction do
   describe 'Parameter Passing' do
     it "makes sure that all the parameters are passed" do
       valid_params = {
-        emulator_name: "Pixel_3_API_29",
-        sdk_dir: "/Users/username/Library/Android/sdk",
         package: "system-images;android-29;google_apis;x86",
         device: "Nexus 5X",
-        port: "5554",
         flow_file: "flows.yaml"
       }
 
-      %i[emulator_name sdk_dir package device port flow_file].each do |key|
+      %i[package device flow_file].each do |key|
         expect(valid_params[key]).not_to be_nil
       end
-    end
-
-    it 'throws error if emulator_name is not provided' do
-      invalid_params = {
-        sdk_dir: "/Users/username/Library/Android/sdk",
-        emulator_package: "system-images;android-29;google_apis;x86",
-        emulator_device: "Nexus 5X",
-        emulator_port: "5554",
-        maestro_flow_file: "flows.yaml"
-        }
-      expect { Fastlane::Actions::MaestroOrchestrationAndroidAction.run(invalid_params) }.to raise_error("Missing required parameters: emulator_name")
     end
 
     it 'throws error if emulator_device is not provided' do
@@ -89,17 +75,6 @@ describe Fastlane::Actions::MaestroOrchestrationAndroidAction do
       expect { Fastlane::Actions::MaestroOrchestrationAndroidAction.run(invalid_params) }.to raise_error("Missing required parameters: emulator_device")
     end
 
-    it 'throws error if skd_dir is not provided' do
-      invalid_params = {
-        emulator_name: "Pixel_3_API_29",
-        emulator_package: "system-images;android-29;google_apis;x86",
-        emulator_device: "Nexus 5X",
-        emulator_port: "5554",
-        maestro_flow_file: "flows.yaml"
-        }
-      expect { Fastlane::Actions::MaestroOrchestrationAndroidAction.run(invalid_params) }.to raise_error("Missing required parameters: sdk_dir")
-    end
-
     it 'throws error if emulator_package is not provided' do
       invalid_params = {
         emulator_name: "Pixel_3_API_29",
@@ -109,17 +84,6 @@ describe Fastlane::Actions::MaestroOrchestrationAndroidAction do
         maestro_flow_file: "flows.yaml"
         }
       expect { Fastlane::Actions::MaestroOrchestrationAndroidAction.run(invalid_params) }.to raise_error("Missing required parameters: emulator_package")
-    end
-
-    it 'throws error if emulator_port is not provided' do
-      invalid_params = {
-        emulator_name: "Pixel_3_API_29",
-        sdk_dir: "/Users/username/Library/Android/sdk",
-        emulator_package: "system-images;android-29;google_apis;x86",
-        emulator_device: "Nexus 5X",
-        maestro_flow_file: "flows.yaml"
-        }
-      expect { Fastlane::Actions::MaestroOrchestrationAndroidAction.run(invalid_params) }.to raise_error("Missing required parameters: emulator_port")
     end
 
     it 'throws error if maestro_flow_file is not provided' do
