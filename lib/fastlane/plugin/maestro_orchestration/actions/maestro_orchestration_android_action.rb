@@ -7,6 +7,16 @@ module Fastlane
   module Actions
     class MaestroOrchestrationAndroidAction < Action
       def self.run(params)
+        required_params = [:emulator_name, :sdk_dir, :emulator_package, :emulator_device, :emulator_port, :maestro_flow_file]
+        missing_params = required_params.select { |param| params[param].nil? }
+
+        if missing_params.any?
+          missing_params.each do |param|
+            UI.error("Missing parameter: #{param}")
+          end
+          raise "Missing required parameters: #{missing_params.join(', ')}"
+        end
+
         Fastlane::Actions::AndroidEmulatorAction.run(
           name: params[:emulator_name],
           sdk_dir: params[:sdk_dir],
