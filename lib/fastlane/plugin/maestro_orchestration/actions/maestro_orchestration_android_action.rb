@@ -13,22 +13,37 @@ module Fastlane
           package: params[:emulator_package],
           device: params[:emulator_device],
           port: params[:emulator_port],
-          demo_mode: true,
+          demo_mode: false,
           cold_boot: true,
-          additional_options: params[:additional_options]
+          additional_options: []
         )
-
+        sleep(5)
+        set_demo_mode(params)
         build_and_install_android_app(params)
 
         UI.message("Running Maestro tests on Android...")
         sh("maestro test #{params[:maestro_flow_file]}")
-
         UI.success("Finished Maestro tests on Android.")
 
-        UI.message("Killing Android emulator...")
+        UI.message("Exit demo mode and kill Android emulator...")
         adb = "#{params[:sdk_dir]}/platform-tools/adb"
+        system("#{adb} shell am broadcast -a com.android.systemui.demo -e command exit")
+        sleep(3)
         system("#{adb} emu kill")
         UI.success("Android emulator killed. Process finished.")
+      end
+
+      def self.set_demo_mode(params)
+        UI.message("Checking and allowing demo mode on Android emulator...")
+        sh("#{params[:sdk_dir]}/platform-tools/adb shell settings put global sysui_demo_allowed 1")
+        sh("#{params[:sdk_dir]}/platform-tools/adb shell settings get global sysui_demo_allowed")
+
+        UI.message("Setting demo mode commands...")
+        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command enter")
+        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200")
+        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command battery -e level 100")
+        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4")
+        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4")
       end
 
       def self.build_and_install_android_app(params)
