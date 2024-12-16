@@ -18,7 +18,7 @@ module Fastlane
           additional_options: []
         )
         sleep(5)
-        set_demo_mode(params)
+        demo_mode(params)
         build_and_install_android_app(params)
 
         UI.message("Running Maestro tests on Android...")
@@ -33,7 +33,7 @@ module Fastlane
         UI.success("Android emulator killed. Process finished.")
       end
 
-      def self.set_demo_mode(params)
+      def self.demo_mode(params)
         UI.message("Checking and allowing demo mode on Android emulator...")
         sh("#{params[:sdk_dir]}/platform-tools/adb shell settings put global sysui_demo_allowed 1")
         sh("#{params[:sdk_dir]}/platform-tools/adb shell settings get global sysui_demo_allowed")
