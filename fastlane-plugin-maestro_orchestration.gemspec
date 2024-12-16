@@ -19,6 +19,6 @@ Gem::Specification.new do |spec|
 
   # Don't add a dependency to fastlane or fastlane_re
   # since this would cause a circular dependency
-
   # spec.add_dependency 'your-dependency', '~> 1.0.0'
+  spec.add_dependency('fastlane-plugin-android_emulator', '~> 1.2', '>= 1.2.1')
 end
