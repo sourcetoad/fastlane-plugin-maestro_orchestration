@@ -6,6 +6,16 @@ module Fastlane
   module Actions
     class MaestroOrchestrationIosAction < Action
       def self.run(params)
+        required_params = [:simulator_device, :scheme, :workspace, :maestro_flow_file]
+        missing_params = required_params.select { |param| params[param].nil? }
+
+        if missing_params.any?
+          missing_params.each do |param|
+            UI.error("Missing parameter: #{param}")
+          end
+          raise "Missing required parameters: #{missing_params.join(', ')}"
+        end
+
         device_name = params[:simulator_device]
         boot_ios_simulator(device_name)
         build_and_install_ios_app(params)

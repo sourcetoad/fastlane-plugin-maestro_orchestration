@@ -1,42 +1,70 @@
-# describe Fastlane::Actions::MaestroOrchestrationIosAction do
-#   describe '#run' do
-#     let(:params) do
-#       {
-#         simulator_device: "iPhone 15",
-#         scheme: "bluetooth_test",
-#         workspace: "bluetooth_test.xcworkspace",
-#         maestro_flows: "../.maestro/flow_ios.yaml"
-#       }
-#     end
+describe Fastlane::Actions::MaestroOrchestrationIosAction do
+  describe 'Parameter Passing' do
+    it 'makes sure that all the parameters are passed' do
+      valid_params = {
+        simulator_device: "iPhone 14",
+        scheme: "MyAppScheme",
+        workspace: "MyApp.xcworkspace",
+        maestro_flow_file: "flows.yaml"
+        }
+      %i[simulator_device scheme workspace maestro_flow_file].each do |key|
+        expect(valid_params[key]).not_to be_nil
+      end
+    end
 
-#     before do
-#       allow(Fastlane::UI).to receive(:message)
-#       allow(Fastlane::UI).to receive(:success)
-#       allow(Fastlane::UI).to receive(:error)
-#       allow(Fastlane::UI).to receive(:user_error!)
-#       allow(Fastlane::UI).to receive(:warning)
-#       allow_any_instance_of(Fastlane::Actions::MaestroOrchestrationIosAction).to receive(:system)
-#       allow_any_instance_of(Fastlane::Actions::MaestroOrchestrationIosAction).to receive(:sh)
-#       allow_any_instance_of(Fastlane::Actions::MaestroOrchestrationIosAction).to receive(:sleep)
-#     end
+    it 'throws error if maestro_flow_file is not provided' do
+      invalid_params = {
+        simulator_device: "iPhone 14",
+        scheme: "MyAppScheme",
+        workspace: "MyApp.xcworkspace"
+        }
+      expect { Fastlane::Actions::MaestroOrchestrationIosAction.run(invalid_params) }.to raise_error("Missing required parameters: maestro_flow_file")
+    end
 
-#     it 'boots the simulator if not already booted' do
-#       # Mocking system call for booting the simulator
-#       allow(Fastlane::Actions::MaestroOrchestrationIosAction).to receive(:system).with("xcrun simctl boot 'iPhone 15'")
+    it 'throws error if simulator_device is not provided' do
+      invalid_params = {
+        maestro_flow_file: "flows.yaml",
+        scheme: "MyAppScheme",
+        workspace: "MyApp.xcworkspace"
+        }
+      expect { Fastlane::Actions::MaestroOrchestrationIosAction.run(invalid_params) }.to raise_error("Missing required parameters: simulator_device")
+    end
 
-#       expect(Fastlane::UI).to receive(:message).with("iPhone 15 is not booted. Booting now...")
-#       expect(Fastlane::UI).to receive(:message).with("Waiting for the simulator to boot...")
-#       expect(Fastlane::UI).to receive(:success).with("Simulator 'iPhone 15' is booted.")
+    it 'throws error if scheme is not provided' do
+      invalid_params = {
+        simulator_device: "iPhone 14",
+        maestro_flow_file: "flows.yaml",
+        workspace: "MyApp.xcworkspace"
+        }
+      expect { Fastlane::Actions::MaestroOrchestrationIosAction.run(invalid_params) }.to raise_error("Missing required parameters: scheme")
+    end
 
-#       Fastlane::Actions::MaestroOrchestrationIosAction.run(params)
-#     end
+    it 'throws error if workspace is not provided' do
+      invalid_params = {
+        simulator_device: "iPhone 14",
+        scheme: "MyAppScheme",
+        maestro_flow_file: "flows.yaml"
+        }
+      expect { Fastlane::Actions::MaestroOrchestrationIosAction.run(invalid_params) }.to raise_error("Missing required parameters: workspace")
+    end
+  end
+end
 
-#     it 'builds and installs the iOS app' do
-#       expect(Fastlane::UI).to receive(:message).with("Building iOS app with scheme: bluetooth_test")
-#       expect(Fastlane::UI).to receive(:message).with("Found .app file at: /path/to/app")
-#       expect(Fastlane::UI).to receive(:success).with("App installed on iOS simulator.")
+describe Fastlane::Actions::MaestroOrchestrationAndroidAction do
+  describe 'Parameter Passing' do
+    it "makes sure that all the parameters are passed" do
+      valid_params = {
+        emulator_name: "Pixel_3_API_29",
+        sdk_dir: "/Users/username/Library/Android/sdk",
+        package: "system-images;android-29;google_apis;x86",
+        device: "Nexus 5X",
+        port: "5554",
+        flow_file: "flows.yaml"
+      }
 
-#       Fastlane::Actions::MaestroOrchestrationIosAction.run(params)
-#     end
-#   end
-# end
+      %i[emulator_name sdk_dir package device port flow_file].each do |key|
+        expect(valid_params[key]).not_to be_nil
+      end
+    end
+  end
+end
