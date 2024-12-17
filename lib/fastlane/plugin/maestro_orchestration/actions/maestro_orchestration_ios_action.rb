@@ -22,6 +22,10 @@ module Fastlane
         UI.message("Running Maestro tests on iOS...")
         `maestro test #{params[:maestro_flow_file]}`
         UI.success("Finished Maestro tests on iOS.")
+
+        UI.message("Killing iOS simulator...")
+        system("xcrun simctl shutdown booted")
+        UI.success("iOS simulator killed. Process finished.")
       end
 
       def self.boot_ios_simulator(params)
