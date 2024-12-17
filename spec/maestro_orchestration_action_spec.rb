@@ -2,12 +2,11 @@ describe Fastlane::Actions::MaestroOrchestrationIosAction do
   describe 'Parameter Passing' do
     it 'makes sure that all the parameters are passed' do
       valid_params = {
-        simulator_device: "iPhone 14",
         scheme: "MyAppScheme",
         workspace: "MyApp.xcworkspace",
         maestro_flow_file: "flows.yaml"
         }
-      %i[simulator_device scheme workspace maestro_flow_file].each do |key|
+      %i[scheme workspace maestro_flow_file].each do |key|
         expect(valid_params[key]).not_to be_nil
       end
     end
@@ -19,15 +18,6 @@ describe Fastlane::Actions::MaestroOrchestrationIosAction do
         workspace: "MyApp.xcworkspace"
         }
       expect { Fastlane::Actions::MaestroOrchestrationIosAction.run(invalid_params) }.to raise_error("Missing required parameters: maestro_flow_file")
-    end
-
-    it 'throws error if simulator_device is not provided' do
-      invalid_params = {
-        maestro_flow_file: "flows.yaml",
-        scheme: "MyAppScheme",
-        workspace: "MyApp.xcworkspace"
-        }
-      expect { Fastlane::Actions::MaestroOrchestrationIosAction.run(invalid_params) }.to raise_error("Missing required parameters: simulator_device")
     end
 
     it 'throws error if scheme is not provided' do

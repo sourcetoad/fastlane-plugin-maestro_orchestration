@@ -6,7 +6,7 @@ module Fastlane
   module Actions
     class MaestroOrchestrationIosAction < Action
       def self.run(params)
-        required_params = [:simulator_name, :scheme, :workspace, :maestro_flow_file]
+        required_params = [:scheme, :workspace, :maestro_flow_file]
         missing_params = required_params.select { |param| params[param].nil? }
 
         if missing_params.any?
