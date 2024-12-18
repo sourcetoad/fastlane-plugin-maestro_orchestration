@@ -32,6 +32,9 @@ module Fastlane
         device_name = params[:simulator_name]
         device_type = params[:device_type]
 
+        UI.message("Killing already booted iOS simulator...")
+        system("xcrun simctl shutdown booted")
+
         UI.message("Device name: #{device_name}")
         simulators_list = `xcrun simctl list devices`.strip
 
