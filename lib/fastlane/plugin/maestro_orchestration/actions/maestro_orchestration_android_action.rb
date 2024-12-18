@@ -17,16 +17,9 @@ module Fastlane
           raise "Missing required parameters: #{missing_params.join(', ')}"
         end
 
-        Fastlane::Actions::AndroidEmulatorAction.run(
-          name: params[:emulator_name],
-          sdk_dir: params[:sdk_dir],
-          package: params[:emulator_package],
-          device: params[:emulator_device],
-          port: params[:emulator_port],
-          demo_mode: false,
-          cold_boot: true,
-          additional_options: []
-        )
+        UI.message("Emualtor_device: #{params[:emulator_device]}")
+
+        setup_emulator(params)
         sleep(5)
         demo_mode(params)
         build_and_install_android_app(params)
@@ -41,6 +34,40 @@ module Fastlane
         sleep(3)
         system("#{adb} emu kill")
         UI.success("Android emulator killed. Process finished.")
+      end
+
+      def self.setup_emulator(params)
+        sdk_dir = params[:sdk_dir]
+        adb = "#{sdk_dir}/platform-tools/adb"
+
+        UI.message("Stop all running emulators...")
+        devices = `adb devices`.split("\n").drop(1)
+        UI.message("Devices: #{devices}")
+
+        if devices.empty?
+          UI.message("No running emulators found.")
+        else
+          sleep(5)
+          devices.each do |device|
+            serial = device.split("\t").first  # Extract the serial number
+            if serial.include?("emulator")     # Check if it's an emulator
+              system("adb -s #{serial} emu kill") # Stop the emulator
+              system("Stopped emulator: #{serial}")
+            end
+          end
+        end
+
+        UI.message("Setting up new Android emulator...")
+        system("#{sdk_dir}/cmdline-tools/latest/bin/avdmanager create avd -n '#{params[:emulator_name]}' -f -k '#{params[:emulator_package]}' -d '#{params[:emulator_device]}'")
+        sleep(5)
+
+        UI.message("Starting Android emulator...")
+        system("#{sdk_dir}/emulator/emulator -avd #{params[:emulator_name]} -port #{params[:emulator_port]} > /dev/null 2>&1 &")
+        sh("#{adb} -e wait-for-device")
+
+        sleep(5) while sh("#{adb} -e shell getprop sys.boot_completed").strip != "1"
+
+        UI.success("Android emulator started.")
       end
 
       def self.demo_mode(params)

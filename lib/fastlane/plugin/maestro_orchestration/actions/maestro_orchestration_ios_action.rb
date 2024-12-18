@@ -6,7 +6,7 @@ module Fastlane
   module Actions
     class MaestroOrchestrationIosAction < Action
       def self.run(params)
-        required_params = [:simulator_device, :scheme, :workspace, :maestro_flow_file]
+        required_params = [:scheme, :workspace, :maestro_flow_file]
         missing_params = required_params.select { |param| params[param].nil? }
 
         if missing_params.any?
@@ -16,31 +16,47 @@ module Fastlane
           raise "Missing required parameters: #{missing_params.join(', ')}"
         end
 
-        device_name = params[:simulator_device]
-        boot_ios_simulator(device_name)
+        boot_ios_simulator(params)
         build_and_install_ios_app(params)
 
         UI.message("Running Maestro tests on iOS...")
         `maestro test #{params[:maestro_flow_file]}`
         UI.success("Finished Maestro tests on iOS.")
+
+        UI.message("Killing iOS simulator...")
+        system("xcrun simctl shutdown booted")
+        UI.success("iOS simulator killed. Process finished.")
       end
 
-      def self.boot_ios_simulator(device_name)
+      def self.boot_ios_simulator(params)
+        device_name = params[:simulator_name]
+        device_type = params[:device_type]
+
+        UI.message("Device name: #{device_name}")
         simulators_list = `xcrun simctl list devices`.strip
 
         unless simulators_list.include?(device_name)
           UI.error("Simulator '#{device_name}' not found.")
-          return
+          UI.message("Creating new simulator...")
+          system("xcrun simctl create '#{device_name}' #{device_type}")
+          # Refresh the list of simulators
+          simulators_list = `xcrun simctl list devices`.strip
         end
 
-        device_status = simulators_list.match(/#{Regexp.quote(device_name)}.*\((.*?)\)/)
-        if device_status && device_status[1].casecmp('Booted').zero?
+        device_status = simulators_list.match(/#{Regexp.quote(device_name)}.*\(([^)]+)\) \(([^)]+)\)/)
+        UI.message("Device status: #{device_status}")
+        device_id = device_status[1]
+        device_state = device_status[2]
+        if device_status && device_state.casecmp('Booted').zero?
           UI.success("#{device_name} is already booted.")
         else
           UI.message("#{device_name} is not booted. Booting now...")
-          system("xcrun simctl boot '#{device_name}'")
+          system("xcrun simctl boot '#{device_id}'")
           UI.message("Waiting for the simulator to boot...")
-          sleep(5)
+          until `xcrun simctl list devices`.include?("#{device_name} (#{device_id}) (Booted)")
+            UI.message("Waiting for the simulator to boot...")
+            sleep(5)
+          end
           UI.success("Simulator '#{device_name}' is booted.")
         end
       end
@@ -50,7 +66,7 @@ module Fastlane
         other_action.gym(
           workspace: params[:workspace],
           scheme: params[:scheme],
-          destination: "platform=iOS Simulator,name=#{params[:simulator_device]}",
+          destination: "platform=iOS Simulator,name=#{params[:simulator_name]}",
           configuration: "Debug",
           clean: true,
           sdk: "iphonesimulator",
@@ -81,10 +97,19 @@ module Fastlane
       def self.available_options
         [
           FastlaneCore::ConfigItem.new(
-            key: :simulator_device,
+            key: :simulator_name,
             env_name: "MAESTRO_IOS_DEVICE",
             description: "The iOS simulator device to boot",
-            optional: false,
+            default_value: "iPhone 15",
+            optional: true,
+            type: String
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :device_type,
+            env_name: "MAESTRO_IOS_DEVICE",
+            description: "The iOS simulator device type for new simulator",
+            default_value: "com.apple.CoreSimulator.SimDeviceType.iPhone-15",
+            optional: true,
             type: String
           ),
           FastlaneCore::ConfigItem.new(
