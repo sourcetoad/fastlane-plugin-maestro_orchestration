@@ -17,10 +17,14 @@ module Fastlane
         end
 
         boot_ios_simulator(params)
-        build_and_install_ios_app(params)
+        install_ios_app(params)
 
         UI.message("Running Maestro tests on iOS...")
-        `maestro test #{params[:maestro_flow_file]}`
+
+        simulators_list = `xcrun simctl list devices`.strip
+        device_status = simulators_list.match(/#{Regexp.quote(params[:simulator_name])}.*\(([^)]+)\) \(([^)]+)\)/)
+        device_id = device_status[1]
+        `maestro --device #{device_id} test #{params[:maestro_flow_file]}`
         UI.success("Finished Maestro tests on iOS.")
 
         UI.message("Killing iOS simulator...")
@@ -64,25 +68,9 @@ module Fastlane
         end
       end
 
-      def self.build_and_install_ios_app(params)
-        UI.message("Building iOS app with scheme: #{params[:scheme]}")
-        other_action.gym(
-          workspace: params[:workspace],
-          scheme: params[:scheme],
-          destination: "platform=iOS Simulator,name=#{params[:simulator_name]}",
-          configuration: "Debug",
-          clean: true,
-          sdk: "iphonesimulator",
-          build_path: "./build",
-          skip_archive: true,
-          skip_package_ipa: true,
-          include_symbols: false,
-          include_bitcode: false,
-          xcargs: "-UseModernBuildSystem=YES"
-        )
-
+      def self.install_ios_app(params)
         derived_data_path = File.expand_path("~/Library/Developer/Xcode/DerivedData")
-        app_path = Dir["#{derived_data_path}/**/#{params[:scheme]}.app"].first
+        app_path = Dir["#{derived_data_path}/**/Release-iphonesimulator/#{params[:scheme]}.app"].first
 
         if app_path.nil?
           UI.user_error!("Error: .app file not found in DerivedData.")

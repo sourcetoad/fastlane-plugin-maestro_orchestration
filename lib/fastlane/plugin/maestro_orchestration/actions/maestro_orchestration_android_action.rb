@@ -18,18 +18,30 @@ module Fastlane
         end
 
         UI.message("Emualtor_device: #{params[:emulator_device]}")
+        adb = "#{params[:sdk_dir]}/platform-tools/adb"
 
         setup_emulator(params)
         sleep(5)
         demo_mode(params)
-        build_and_install_android_app(params)
+        install_android_app(params)
 
         UI.message("Running Maestro tests on Android...")
-        sh("maestro test #{params[:maestro_flow_file]}")
-        UI.success("Finished Maestro tests on Android.")
+        devices = `adb devices`.split("\n").drop(1)
+        if devices.empty?
+          UI.message("No running emulators found.")
+        else
+          sleep(2)
+          UI.message("Devices: #{devices}")
+          devices.each do |device|
+            serial = device.split("\t").first  # Extract the serial number
+            if serial.include?("emulator")     # Check if it's an emulator
+              sh("maestro --device #{serial} test #{params[:maestro_flow_file]}")
+              UI.success("Finished Maestro tests on Android.")
+            end
+          end
+        end
 
         UI.message("Exit demo mode and kill Android emulator...")
-        adb = "#{params[:sdk_dir]}/platform-tools/adb"
         system("#{adb} shell am broadcast -a com.android.systemui.demo -e command exit")
         sleep(3)
         system("#{adb} emu kill")
@@ -83,11 +95,10 @@ module Fastlane
         sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4")
       end
 
-      def self.build_and_install_android_app(params)
-        UI.message("Building Android app...")
-        other_action.gradle(task: "assembleDebug")
+      def self.install_android_app(params)
+        UI.message("Installing Android app...")
 
-        apk_path = Dir["app/build/outputs/apk/debug/app-debug.apk"].first
+        apk_path = Dir["app/build/outputs/apk/release/app-release.apk"].first
 
         if apk_path.nil?
           UI.user_error!("Error: APK file not found in build outputs.")
