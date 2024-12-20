@@ -26,7 +26,7 @@ module Fastlane
         install_android_app(params)
 
         UI.message("Running Maestro tests on Android...")
-        devices = `adb devices`.split("\n").drop(1)
+        devices = `#{adb} devices`.split("\n").drop(1)
         if devices.empty?
           UI.message("No running emulators found.")
         else
@@ -53,7 +53,7 @@ module Fastlane
         adb = "#{sdk_dir}/platform-tools/adb"
 
         UI.message("Stop all running emulators...")
-        devices = `adb devices`.split("\n").drop(1)
+        devices = `#{adb} devices`.split("\n").drop(1)
         UI.message("Devices: #{devices}")
 
         if devices.empty?
@@ -63,7 +63,7 @@ module Fastlane
           devices.each do |device|
             serial = device.split("\t").first  # Extract the serial number
             if serial.include?("emulator")     # Check if it's an emulator
-              system("adb -s #{serial} emu kill") # Stop the emulator
+              system("#{adb} -s #{serial} emu kill") # Stop the emulator
               system("Stopped emulator: #{serial}")
             end
           end
@@ -98,6 +98,8 @@ module Fastlane
       def self.install_android_app(params)
         UI.message("Installing Android app...")
 
+        sdk_dir = params[:sdk_dir]
+        adb = "#{sdk_dir}/platform-tools/adb"
         apk_path = Dir["app/build/outputs/apk/release/app-release.apk"].first
 
         if apk_path.nil?
@@ -105,7 +107,7 @@ module Fastlane
         end
 
         UI.message("Found APK file at: #{apk_path}")
-        sh("adb install -r '#{apk_path}'")
+        sh("#{adb} install -r '#{apk_path}'")
         UI.success("APK installed on Android emulator.")
       end
 
