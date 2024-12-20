@@ -17,7 +17,7 @@ module Fastlane
         end
 
         boot_ios_simulator(params)
-        install_ios_app(params)
+        build_and_install_ios_app(params)
 
         UI.message("Running Maestro tests on iOS...")
 
@@ -68,7 +68,23 @@ module Fastlane
         end
       end
 
-      def self.install_ios_app(params)
+      def self.build_and_install_ios_app(params)
+        UI.message("Building iOS app with scheme: #{params[:scheme]}")
+        other_action.gym(
+          workspace: params[:workspace],
+          scheme: params[:scheme],
+          destination: "platform=iOS Simulator,name=#{params[:simulator_name]}",
+          configuration: "Release",
+          clean: true,
+          sdk: "iphonesimulator",
+          build_path: "./build",
+          skip_archive: true,
+          skip_package_ipa: true,
+          include_symbols: false,
+          include_bitcode: false,
+          xcargs: "-UseModernBuildSystem=YES"
+        )
+
         derived_data_path = File.expand_path("~/Library/Developer/Xcode/DerivedData")
         app_path = Dir["#{derived_data_path}/**/Release-iphonesimulator/#{params[:scheme]}.app"].first
 
