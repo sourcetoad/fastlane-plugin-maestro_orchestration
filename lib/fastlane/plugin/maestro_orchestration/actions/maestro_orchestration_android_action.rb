@@ -69,6 +69,12 @@ module Fastlane
           end
         end
 
+        UI.message("List some directories...\n\n")
+        sh("ls -l ~/Library/Android/sdk")
+        sh("ls -l ~/Library/Android/sdk/cmdline-tools")
+        sh("ls -l ~/Library/Android/sdk/cmdline-tools/latest")
+        sh("ls -l ~/Library/Android/sdk/cmdline-tools/latest/bin")
+        UI.message("Directories listed...\n\n")
         UI.message("Setting up new Android emulator...")
         system("#{sdk_dir}/cmdline-tools/latest/bin/avdmanager create avd -n '#{params[:emulator_name]}' -f -k '#{params[:emulator_package]}' -d '#{params[:emulator_device]}'")
         sleep(5)
