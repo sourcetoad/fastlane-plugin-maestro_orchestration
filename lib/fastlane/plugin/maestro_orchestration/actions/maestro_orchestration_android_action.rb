@@ -50,7 +50,7 @@ module Fastlane
 
       def self.setup_emulator(params)
         sdk_dir = params[:sdk_dir]
-        adb = "#{sdk_dir}/platform-tools/adb"
+        adb = "#{sdk_dir}/android-commandlinetools/platform-tools/adb"
 
         UI.message("Stop all running emulators...")
         devices = `#{adb} devices`.split("\n").drop(1)
@@ -70,11 +70,11 @@ module Fastlane
         end
 
         UI.message("Setting up new Android emulator...")
-        system("#{sdk_dir}/cmdline-tools/latest/bin/avdmanager create avd -n '#{params[:emulator_name]}' -f -k '#{params[:emulator_package]}' -d '#{params[:emulator_device]}'")
+        system("#{sdk_dir}/android-commandlinetools/cmdline-tools/latest/bin/avdmanager create avd -n '#{params[:emulator_name]}' -f -k '#{params[:emulator_package]}' -d '#{params[:emulator_device]}'")
         sleep(5)
 
         UI.message("Starting Android emulator...")
-        system("#{sdk_dir}/emulator/emulator -avd #{params[:emulator_name]} -port #{params[:emulator_port]} > /dev/null 2>&1 &")
+        system("#{sdk_dir}/android-commandlinetools/emulator/emulator -avd #{params[:emulator_name]} -port #{params[:emulator_port]} > /dev/null 2>&1 &")
         sh("#{adb} -e wait-for-device")
 
         sleep(5) while sh("#{adb} -e shell getprop sys.boot_completed").strip != "1"
@@ -145,7 +145,7 @@ module Fastlane
             key: :emulator_device,
             env_name: "MAESTRO_AVD_DEVICE",
             description: "Device",
-            default_value: "pixel_8_pro",
+            default_value: "pixel_7_pro",
             optional: true
           ),
           FastlaneCore::ConfigItem.new(
