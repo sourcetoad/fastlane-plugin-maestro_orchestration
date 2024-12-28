@@ -18,6 +18,7 @@ module Fastlane
         end
 
         UI.message("Emualtor_device: #{params[:emulator_device]}")
+        UI.message("SDK DIR: #{params[:sdk_dir]}")
         adb = "#{params[:sdk_dir]}/platform-tools/adb"
 
         setup_emulator(params)
@@ -26,7 +27,8 @@ module Fastlane
         install_android_app(params)
 
         UI.message("Running Maestro tests on Android...")
-        devices = `#{adb} devices`.split("\n").drop(1)
+        devices = other_action.adb(command: "devices", adb_path: adb).split("\n").drop(1)
+        UI.message("Devices: #{devices}")
         if devices.empty?
           UI.message("No running emulators found.")
         else
@@ -42,18 +44,18 @@ module Fastlane
         end
 
         UI.message("Exit demo mode and kill Android emulator...")
-        system("#{adb} shell am broadcast -a com.android.systemui.demo -e command exit")
+        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command exit", adb_path: adb)
         sleep(3)
-        system("#{adb} emu kill")
+        other_action.adb(command: "emu kill", adb_path: adb)
         UI.success("Android emulator killed. Process finished.")
       end
 
       def self.setup_emulator(params)
         sdk_dir = params[:sdk_dir]
-        adb = "#{sdk_dir}/android-commandlinetools/platform-tools/adb"
+        adb = "#{sdk_dir}/platform-tools/adb"
 
         UI.message("Stop all running emulators...")
-        devices = `#{adb} devices`.split("\n").drop(1)
+        devices = other_action.adb(command: "devices", adb_path: adb).split("\n").drop(1)
         UI.message("Devices: #{devices}")
 
         if devices.empty?
@@ -63,21 +65,21 @@ module Fastlane
           devices.each do |device|
             serial = device.split("\t").first  # Extract the serial number
             if serial.include?("emulator")     # Check if it's an emulator
-              system("#{adb} -s #{serial} emu kill") # Stop the emulator
+              other_action.adb(command: "emu kill", adb_path: adb, serial: serial)
               system("Stopped emulator: #{serial}")
             end
           end
         end
 
         UI.message("Setting up new Android emulator...")
-        system("#{sdk_dir}/android-commandlinetools/cmdline-tools/latest/bin/avdmanager create avd -n '#{params[:emulator_name]}' -f -k '#{params[:emulator_package]}' -d '#{params[:emulator_device]}'")
+        system("#{sdk_dir}/cmdline-tools/latest/bin/avdmanager create avd -n '#{params[:emulator_name]}' -f -k '#{params[:emulator_package]}' -d '#{params[:emulator_device]}'")
         sleep(5)
 
         UI.message("Starting Android emulator...")
-        system("#{sdk_dir}/android-commandlinetools/emulator/emulator -avd #{params[:emulator_name]} -port #{params[:emulator_port]} > /dev/null 2>&1 &")
-        sh("#{adb} -e wait-for-device")
+        system("#{sdk_dir}/emulator/emulator -avd #{params[:emulator_name]} -port #{params[:emulator_port]} > /dev/null 2>&1 &")
+        other_action.adb(command: "wait-for-device", adb_path: adb)
 
-        sleep(5) while sh("#{adb} -e shell getprop sys.boot_completed").strip != "1"
+        sleep(5) while other_action.adb(command: "shell getprop sys.boot_completed", adb_path: adb).strip != "1"
 
         UI.success("Android emulator started.")
       end
@@ -107,7 +109,7 @@ module Fastlane
         end
 
         UI.message("Found APK file at: #{apk_path}")
-        sh("#{adb} install -r '#{apk_path}'")
+        other_action.adb(command: "install -r '#{apk_path}'", adb_path: adb)
         UI.success("APK installed on Android emulator.")
       end
 
@@ -121,7 +123,7 @@ module Fastlane
             key: :sdk_dir,
             env_name: "MAESTRO_ANDROID_SDK_DIR",
             description: "Path to the Android SDK DIR",
-            default_value: "~/Library/Android/sdk",
+            default_value: ENV["ANDROID_HOME"] || ENV["ANDROID_SDK_ROOT"] || "~/Library/Android/sdk",
             optional: true,
             verify_block: proc do |value|
               UI.user_error!("No ANDROID_SDK_DIR given, pass using `sdk_dir: 'sdk_dir'`") unless value && !value.empty?
