@@ -53,6 +53,7 @@ module Fastlane
       def self.setup_emulator(params)
         sdk_dir = params[:sdk_dir]
         adb = "#{sdk_dir}/platform-tools/adb"
+        avdmanager = Helper::AvdHelper.new
 
         UI.message("Stop all running emulators...")
         devices = other_action.adb(command: "devices", adb_path: adb).split("\n").drop(1)
@@ -72,7 +73,7 @@ module Fastlane
         end
 
         UI.message("Setting up new Android emulator...")
-        system("#{sdk_dir}/cmdline-tools/latest/bin/avdmanager create avd -n '#{params[:emulator_name]}' -f -k '#{params[:emulator_package]}' -d '#{params[:emulator_device]}'")
+        avdmanager.create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
         sleep(5)
 
         UI.message("Starting Android emulator...")
