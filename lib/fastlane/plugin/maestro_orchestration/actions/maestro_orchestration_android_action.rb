@@ -85,16 +85,18 @@ module Fastlane
       end
 
       def self.demo_mode(params)
+        adb = "#{params[:sdk_dir]}/platform-tools/adb"
+
         UI.message("Checking and allowing demo mode on Android emulator...")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell settings put global sysui_demo_allowed 1")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell settings get global sysui_demo_allowed")
+        other_action.adb(command: "shell settings put global sysui_demo_allowed 1", adb_path: adb)
+        other_action.adb(command: "shell settings get global sysui_demo_allowed", adb_path: adb)
 
         UI.message("Setting demo mode commands...")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command enter")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command battery -e level 100")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4")
+        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command enter", adb_path: adb)
+        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200", adb_path: adb)
+        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command battery -e level 100", adb_path: adb)
+        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4", adb_path: adb)
+        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4", adb_path: adb)
       end
 
       def self.install_android_app(params)
