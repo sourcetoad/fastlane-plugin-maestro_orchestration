@@ -1,6 +1,6 @@
 require 'fastlane/action'
 require 'fastlane_core/configuration/config_item'
-require 'fastlane/plugin/android_emulator'
+require 'fastlane/helper/adb_helper'
 require_relative '../helper/maestro_orchestration_helper'
 
 module Fastlane
@@ -19,7 +19,8 @@ module Fastlane
 
         UI.message("Emualtor_device: #{params[:emulator_device]}")
         UI.message("SDK DIR: #{params[:sdk_dir]}")
-        adb = "#{params[:sdk_dir]}/platform-tools/adb"
+        adb = Helper::AdbHelper.new
+        UI.message("ADB: #{adb.adb_path}")
 
         setup_emulator(params)
         sleep(5)
@@ -27,8 +28,8 @@ module Fastlane
         install_android_app(params)
 
         UI.message("Running Maestro tests on Android...")
-        devices = other_action.adb(command: "devices", adb_path: adb).split("\n").drop(1)
-        UI.message("Devices: #{devices}")
+        devices = adb.trigger(command: "devices").split("\n").drop(1)
+        serial = nil
         if devices.empty?
           UI.message("No running emulators found.")
         else
@@ -44,19 +45,19 @@ module Fastlane
         end
 
         UI.message("Exit demo mode and kill Android emulator...")
-        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command exit", adb_path: adb)
-        sleep(3)
-        other_action.adb(command: "emu kill", adb_path: adb)
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command exit")
+        sleep(5)
+        adb.trigger(command: "emu kill", serial: serial)
         UI.success("Android emulator killed. Process finished.")
       end
 
       def self.setup_emulator(params)
         sdk_dir = params[:sdk_dir]
-        adb = "#{sdk_dir}/platform-tools/adb"
+        adb = Helper::AdbHelper.new
         avdmanager = Helper::AvdHelper.new
 
         UI.message("Stop all running emulators...")
-        devices = other_action.adb(command: "devices", adb_path: adb).split("\n").drop(1)
+        devices = adb.trigger(command: "devices").split("\n").drop(1)
         UI.message("Devices: #{devices}")
 
         if devices.empty?
@@ -66,7 +67,7 @@ module Fastlane
           devices.each do |device|
             serial = device.split("\t").first  # Extract the serial number
             if serial.include?("emulator")     # Check if it's an emulator
-              other_action.adb(command: "emu kill", adb_path: adb, serial: serial)
+              adb.trigger(command: "emu kill", serial: serial)
               system("Stopped emulator: #{serial}")
             end
           end
@@ -78,33 +79,32 @@ module Fastlane
 
         UI.message("Starting Android emulator...")
         system("#{sdk_dir}/emulator/emulator -avd #{params[:emulator_name]} -port #{params[:emulator_port]} > /dev/null 2>&1 &")
-        other_action.adb(command: "wait-for-device", adb_path: adb)
+        adb.trigger(command: "wait-for-device")
 
-        sleep(5) while other_action.adb(command: "shell getprop sys.boot_completed", adb_path: adb).strip != "1"
+        sleep(5) while adb.trigger(command: "shell getprop sys.boot_completed").strip != "1"
 
         UI.success("Android emulator started.")
       end
 
       def self.demo_mode(params)
-        adb = "#{params[:sdk_dir]}/platform-tools/adb"
+        adb = Helper::AdbHelper.new
 
         UI.message("Checking and allowing demo mode on Android emulator...")
-        other_action.adb(command: "shell settings put global sysui_demo_allowed 1", adb_path: adb)
-        other_action.adb(command: "shell settings get global sysui_demo_allowed", adb_path: adb)
+        adb.trigger(command: "shell settings put global sysui_demo_allowed 1")
+        adb.trigger(command: "shell settings get global sysui_demo_allowed")
 
         UI.message("Setting demo mode commands...")
-        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command enter", adb_path: adb)
-        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200", adb_path: adb)
-        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command battery -e level 100", adb_path: adb)
-        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4", adb_path: adb)
-        other_action.adb(command: "shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4", adb_path: adb)
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command enter")
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200")
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command battery -e level 100")
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4")
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4")
       end
 
       def self.install_android_app(params)
         UI.message("Installing Android app...")
 
-        sdk_dir = params[:sdk_dir]
-        adb = "#{sdk_dir}/platform-tools/adb"
+        adb = Helper::AdbHelper.new
         apk_path = Dir["app/build/outputs/apk/release/app-release.apk"].first
 
         if apk_path.nil?
@@ -112,7 +112,7 @@ module Fastlane
         end
 
         UI.message("Found APK file at: #{apk_path}")
-        other_action.adb(command: "install -r '#{apk_path}'", adb_path: adb)
+        adb.trigger(command: "install -r '#{apk_path}'")
         UI.success("APK installed on Android emulator.")
       end
 
