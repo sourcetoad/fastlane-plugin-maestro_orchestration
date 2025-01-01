@@ -106,40 +106,40 @@ module Fastlane
 
         adb = Helper::AdbHelper.new
         apk_path = Dir["app/build/outputs/apk/release/*.apk"].first
-        
+
         if apk_path.nil?
           UI.message("APK file not found. Checking for AAB file...")
-      
+
           # Dynamically check for any AAB in the bundle release output directory
           aab_path = Dir["app/build/outputs/bundle/release/*.aab"].first
-      
+
           if aab_path.nil?
             UI.user_error!("Error: Neither APK nor AAB file found in build outputs.")
           end
-      
+
           UI.message("Found AAB file at: #{aab_path}")
           # Path to bundletool
           bundletool_path = "path/to/bundletool.jar" # Replace with your bundletool path
           output_apks = "app/build/outputs/bundle/release/output.apks"
-      
+
           # Generate APKs using bundletool
           UI.message("Generating APK from AAB using bundletool...")
           system("java -jar #{bundletool_path.shellescape} build-apks --bundle=#{aab_path.shellescape} --output=#{output_apks.shellescape} --mode=universal > /dev/null 2>&1")
-      
+
           # Check if the APK set was generated
           unless File.exist?(output_apks)
             UI.user_error!("Error: Failed to generate APK from AAB using bundletool.")
           end
-      
+
           UI.message("APKs generated at: #{output_apks}")
           UI.message("Extracting universal APK from APK set...")
           system("unzip -o #{output_apks.shellescape} -d app/build/outputs/bundle/release/ > /dev/null 2>&1")
           universal_apk = Dir["app/build/outputs/bundle/release/universal.apk"].first
-      
+
           unless universal_apk
             UI.user_error!("Error: Universal APK not found in APK set.")
           end
-      
+
           UI.message("Universal APK extracted at: #{universal_apk}")
           apk_path = universal_apk
         end
