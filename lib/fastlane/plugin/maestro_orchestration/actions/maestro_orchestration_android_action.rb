@@ -1,6 +1,6 @@
 require 'fastlane/action'
 require 'fastlane_core/configuration/config_item'
-require 'fastlane/plugin/android_emulator'
+require 'fastlane/helper/adb_helper'
 require_relative '../helper/maestro_orchestration_helper'
 
 module Fastlane
@@ -18,7 +18,9 @@ module Fastlane
         end
 
         UI.message("Emualtor_device: #{params[:emulator_device]}")
-        adb = "#{params[:sdk_dir]}/platform-tools/adb"
+        UI.message("SDK DIR: #{params[:sdk_dir]}")
+        adb = Helper::AdbHelper.new
+        UI.message("ADB: #{adb.adb_path}")
 
         setup_emulator(params)
         sleep(5)
@@ -26,7 +28,8 @@ module Fastlane
         install_android_app(params)
 
         UI.message("Running Maestro tests on Android...")
-        devices = `#{adb} devices`.split("\n").drop(1)
+        devices = adb.trigger(command: "devices").split("\n").drop(1)
+        serial = nil
         if devices.empty?
           UI.message("No running emulators found.")
         else
@@ -42,18 +45,19 @@ module Fastlane
         end
 
         UI.message("Exit demo mode and kill Android emulator...")
-        system("#{adb} shell am broadcast -a com.android.systemui.demo -e command exit")
-        sleep(3)
-        system("#{adb} emu kill")
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command exit")
+        sleep(5)
+        adb.trigger(command: "emu kill", serial: serial)
         UI.success("Android emulator killed. Process finished.")
       end
 
       def self.setup_emulator(params)
-        sdk_dir = params[:sdk_dir]
-        adb = "#{sdk_dir}/android-commandlinetools/platform-tools/adb"
+        emulator = Helper::EmulatorHelper.new
+        adb = Helper::AdbHelper.new
+        avdmanager = Helper::AvdHelper.new
 
         UI.message("Stop all running emulators...")
-        devices = `#{adb} devices`.split("\n").drop(1)
+        devices = adb.trigger(command: "devices").split("\n").drop(1)
         UI.message("Devices: #{devices}")
 
         if devices.empty?
@@ -63,51 +67,53 @@ module Fastlane
           devices.each do |device|
             serial = device.split("\t").first  # Extract the serial number
             if serial.include?("emulator")     # Check if it's an emulator
-              system("#{adb} -s #{serial} emu kill") # Stop the emulator
+              adb.trigger(command: "emu kill", serial: serial)
               system("Stopped emulator: #{serial}")
             end
           end
         end
 
         UI.message("Setting up new Android emulator...")
-        system("#{sdk_dir}/android-commandlinetools/cmdline-tools/latest/bin/avdmanager create avd -n '#{params[:emulator_name]}' -f -k '#{params[:emulator_package]}' -d '#{params[:emulator_device]}'")
+        avdmanager.create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
         sleep(5)
 
         UI.message("Starting Android emulator...")
-        system("#{sdk_dir}/android-commandlinetools/emulator/emulator -avd #{params[:emulator_name]} -port #{params[:emulator_port]} > /dev/null 2>&1 &")
-        sh("#{adb} -e wait-for-device")
+        emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
+        adb.trigger(command: "wait-for-device")
 
-        sleep(5) while sh("#{adb} -e shell getprop sys.boot_completed").strip != "1"
+        sleep(5) while adb.trigger(command: "shell getprop sys.boot_completed").strip != "1"
 
         UI.success("Android emulator started.")
       end
 
       def self.demo_mode(params)
+        adb = Helper::AdbHelper.new
+
         UI.message("Checking and allowing demo mode on Android emulator...")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell settings put global sysui_demo_allowed 1")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell settings get global sysui_demo_allowed")
+        adb.trigger(command: "shell settings put global sysui_demo_allowed 1")
+        adb.trigger(command: "shell settings get global sysui_demo_allowed")
 
         UI.message("Setting demo mode commands...")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command enter")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command battery -e level 100")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4")
-        sh("#{params[:sdk_dir]}/platform-tools/adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4")
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command enter")
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200")
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command battery -e level 100")
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4")
+        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4")
       end
 
       def self.install_android_app(params)
         UI.message("Installing Android app...")
 
-        sdk_dir = params[:sdk_dir]
-        adb = "#{sdk_dir}/platform-tools/adb"
-        apk_path = Dir["app/build/outputs/apk/release/app-release.apk"].first
+        adb = Helper::AdbHelper.new
+        apk_path = Dir["app/build/outputs/apk/release/*.apk"].first
+        UI.success("APK path: #{apk_path}")
 
         if apk_path.nil?
           UI.user_error!("Error: APK file not found in build outputs.")
         end
 
         UI.message("Found APK file at: #{apk_path}")
-        sh("#{adb} install -r '#{apk_path}'")
+        adb.trigger(command: "install -r '#{apk_path}'")
         UI.success("APK installed on Android emulator.")
       end
 
@@ -121,7 +127,7 @@ module Fastlane
             key: :sdk_dir,
             env_name: "MAESTRO_ANDROID_SDK_DIR",
             description: "Path to the Android SDK DIR",
-            default_value: "~/Library/Android/sdk",
+            default_value: ENV["ANDROID_HOME"] || ENV["ANDROID_SDK_ROOT"] || "~/Library/Android/sdk",
             optional: true,
             verify_block: proc do |value|
               UI.user_error!("No ANDROID_SDK_DIR given, pass using `sdk_dir: 'sdk_dir'`") unless value && !value.empty?
