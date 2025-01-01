@@ -52,7 +52,7 @@ module Fastlane
       end
 
       def self.setup_emulator(params)
-        sdk_dir = params[:sdk_dir]
+        emulator = Helper::EmulatorHelper.new
         adb = Helper::AdbHelper.new
         avdmanager = Helper::AvdHelper.new
 
@@ -78,7 +78,7 @@ module Fastlane
         sleep(5)
 
         UI.message("Starting Android emulator...")
-        system("#{sdk_dir}/emulator/emulator -avd #{params[:emulator_name]} -port #{params[:emulator_port]} > /dev/null 2>&1 &")
+        emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
         adb.trigger(command: "wait-for-device")
 
         sleep(5) while adb.trigger(command: "shell getprop sys.boot_completed").strip != "1"

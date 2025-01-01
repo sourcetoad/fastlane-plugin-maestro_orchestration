@@ -56,5 +56,42 @@ module Fastlane
         trigger(command: command)
       end
     end
+
+    class EmulatorHelper
+      attr_accessor :emulator_path
+
+      def initialize(emulator_path: nil)
+        android_home = ENV.fetch('ANDROID_HOME', nil) || ENV.fetch('ANDROID_SDK_ROOT', nil)
+        if (emulator_path.nil? || emulator_path == "avdmanager") && android_home
+          emulator_path = File.join(android_home, "emulator", "emulator")
+        end
+        UI.message("This is the emulator path: #{emulator_path}")
+
+        self.emulator_path = Helper.get_executable_path(File.expand_path(emulator_path))
+      end
+
+      def trigger(command: nil)
+        raise "emulator_path is not set" unless emulator_path
+
+        # Build and execute the command
+        command = [emulator_path.shellescape, command].compact.join(" ").strip
+        Action.sh(command)
+      end
+
+      # Start an emulator instance
+      def start_emulator(name:, port:)
+        raise "Emulator name is required" if name.nil? || name.empty?
+        raise "Port is required" if port.nil? || port.to_s.empty?
+
+        command = [
+          "-avd #{name.shellescape}",
+          "-port #{port.shellescape}",
+          "> /dev/null 2>&1 &"
+        ].join(" ")
+
+        UI.message("Starting emulator #{name} on port #{port}...")
+        trigger(command: command)
+      end
+    end
   end
 end
