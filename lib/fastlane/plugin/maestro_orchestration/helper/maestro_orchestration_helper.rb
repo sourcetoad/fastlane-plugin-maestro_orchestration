@@ -31,8 +31,6 @@ module Fastlane
           available_path = Dir.glob(File.join(cmdline_tools_path, "*", "bin")).first
           raise "No valid bin path found in #{cmdline_tools_path}" unless available_path
 
-          UI.message("Available BIN path: #{available_path}")
-
           avdmanager_path = File.join(available_path, "avdmanager")
         end
 

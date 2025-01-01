@@ -105,7 +105,8 @@ module Fastlane
         UI.message("Installing Android app...")
 
         adb = Helper::AdbHelper.new
-        apk_path = Dir["app/build/outputs/apk/release/app-release.apk"].first
+        apk_path = Dir["app/build/outputs/apk/release/*.apk"].first
+        UI.success("APK path: #{apk_path}")
 
         if apk_path.nil?
           UI.user_error!("Error: APK file not found in build outputs.")
