@@ -24,7 +24,16 @@ module Fastlane
       def initialize(avdmanager_path: nil)
         android_home = ENV.fetch('ANDROID_HOME', nil) || ENV.fetch('ANDROID_SDK_ROOT', nil)
         if (avdmanager_path.nil? || avdmanager_path == "avdmanager") && android_home
-          avdmanager_path = File.join(android_home, "cmdline-tools", "latest", "bin", "avdmanager")
+          # First search for cmdline-tools dir
+          cmdline_tools_path = File.join(android_home, "cmdline-tools")
+
+          # Find the first available 'bin' folder within cmdline-tools
+          available_path = Dir.glob(File.join(cmdline_tools_path, "*", "bin")).first
+          raise "No valid bin path found in #{cmdline_tools_path}" unless available_path
+
+          UI.message("Available BIN path: #{available_path}")
+
+          avdmanager_path = File.join(available_path, "avdmanager")
         end
 
         self.avdmanager_path = Helper.get_executable_path(File.expand_path(avdmanager_path))
