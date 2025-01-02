@@ -18,7 +18,7 @@ module Fastlane
         end
 
         UI.message("Emualtor_device: #{params[:emulator_device]}")
-        UI.message("SDK DIR: #{params[:sdk_dir]}")
+        UI.message("--------------\n\nSDK DIR: #{params[:sdk_dir]}\n\n--------------")
         adb = Helper::AdbHelper.new
         UI.message("ADB: #{adb.adb_path}")
 
