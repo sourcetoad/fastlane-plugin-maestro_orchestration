@@ -62,12 +62,12 @@ module Fastlane
           devices.each do |device|
             UI.message("Stopping emulator: #{device.serial}")
             adb.trigger(command: "emu kill", serial: device.serial)
-            sleep(5)
+            sleep(10)
             system("Stopped emulator: #{device.serial}")
           end
         end
         UI.message("Waiting for all emulators to stop...")
-        sleep(5)
+        sleep(10)
 
         UI.message("Setting up new Android emulator...")
         avdmanager.create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
@@ -102,8 +102,6 @@ module Fastlane
         adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command enter", serial: serial)
         adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200", serial: serial)
         adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command battery -e level 100", serial: serial)
-        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4", serial: serial)
-        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4", serial: serial)
       end
 
       def self.install_android_app(params)
