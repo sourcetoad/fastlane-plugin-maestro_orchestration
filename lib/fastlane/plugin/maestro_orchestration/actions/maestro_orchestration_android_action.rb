@@ -102,7 +102,6 @@ module Fastlane
         adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command enter", serial: serial)
         adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200", serial: serial)
         adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command battery -e level 100", serial: serial)
-        adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4", serial: serial)
       end
 
       def self.install_android_app(params)
