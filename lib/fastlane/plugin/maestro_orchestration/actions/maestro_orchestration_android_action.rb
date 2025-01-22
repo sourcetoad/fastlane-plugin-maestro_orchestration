@@ -62,12 +62,12 @@ module Fastlane
           devices.each do |device|
             UI.message("Stopping emulator: #{device.serial}")
             adb.trigger(command: "emu kill", serial: device.serial)
-            sleep(5)
+            sleep(10)
             system("Stopped emulator: #{device.serial}")
           end
         end
         UI.message("Waiting for all emulators to stop...")
-        sleep(5)
+        sleep(10)
 
         UI.message("Setting up new Android emulator...")
         avdmanager.create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
