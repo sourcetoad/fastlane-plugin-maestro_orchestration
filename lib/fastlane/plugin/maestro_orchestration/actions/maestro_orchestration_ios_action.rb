@@ -17,6 +17,7 @@ module Fastlane
         end
 
         boot_ios_simulator(params)
+        demo_mode(params)
         build_and_install_ios_app(params)
 
         UI.message("Running Maestro tests on iOS...")
@@ -66,6 +67,13 @@ module Fastlane
           end
           UI.success("Simulator '#{device_name}' is booted.")
         end
+      end
+
+      def self.demo_mode(params)
+        UI.message("Setting demo mode on #{params[:simulator_name]}...")
+        sh("xcrun simctl status_bar '#{params[:simulator_name]}' override --time '09:30'")
+        sh("xcrun simctl status_bar '#{params[:simulator_name]}' override --batteryState charged --batteryLevel 100")
+        sh("xcrun simctl status_bar '#{params[:simulator_name]}' override --wifiBars 3 --cellularBars 4")
       end
 
       def self.build_and_install_ios_app(params)
