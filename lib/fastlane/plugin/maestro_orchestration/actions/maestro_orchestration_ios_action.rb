@@ -31,9 +31,6 @@ module Fastlane
         UI.message("Killing iOS simulator...")
         system("xcrun simctl shutdown booted")
         UI.success("iOS simulator killed. Process finished.")
-
-        UI.message("FOLDER PATH parameter is: #{params[:folder_path]}\n\n")
-        Helper::MaestroOrchestrationHelper.upload_to_s3(folder_path: params[:folder_path], bucket: params[:bucket], version: params[:version], device: "ios", theme: params[:theme])
       end
 
       def self.boot_ios_simulator(params)
@@ -150,48 +147,6 @@ module Fastlane
             description: "The path to the Maestro flows YAML file",
             optional: false,
             type: String
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :bucket,
-            env_name: "S3_BUCKET",
-            description: "The S3 bucket name where files will be uploaded",
-            default_value: "pad",
-            optional: true
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :folder_path,
-            env_name: "MAESTRO_SCREENSHOTS_FOLDER_PATH",
-            description: "Path to the folder to be uploaded to S3",
-            default_value: File.expand_path("../../.maestro/ios/screenshots", FastlaneCore::Helper.fastlane_enabled_folder_path),
-            optional: true
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :version,
-            env_name: "APP_VERSION",
-            description: "Version of the app that screenshots are taken from",
-            optional: false,
-            verify_block: proc do |value|
-              UI.user_error!("You must provide a version using the `version` parameter.") unless value && !value.strip.empty?
-            end
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :theme,
-            env_name: "APPLICATION_THEME",
-            description: "Optional theme parameter (e.g., dark or light)",
-            default_value: nil,
-            optional: true
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :hmac_secret,
-            env_name: "HMAC_SECRET",
-            description: "The HMAC secret used to sign the payload",
-            optional: false
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :url,
-            env_name: "WEBHOOK_URL",
-            description: "The URL to send the API request to",
-            optional: false
           )
         ]
       end
