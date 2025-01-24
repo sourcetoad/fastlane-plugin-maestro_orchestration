@@ -79,7 +79,7 @@ module Fastlane
       def self.bucket_option
         FastlaneCore::ConfigItem.new(
           key: :bucket,
-          env_name: "S3_BUCKET",
+          env_name: "MAESTRO_SCREENSHOTS_S3_BUCKET",
           description: "The S3 bucket name where files will be uploaded",
           default_value: "pad",
           optional: false,
@@ -92,7 +92,7 @@ module Fastlane
       def self.version_option
         FastlaneCore::ConfigItem.new(
           key: :version,
-          env_name: "APP_VERSION",
+          env_name: "MAESTRO_SCREENSHOTS_APP_VERSION",
           description: "Version of the app that screenshots are taken from",
           optional: false,
           verify_block: proc do |value|
@@ -116,7 +116,7 @@ module Fastlane
       def self.theme_option
         FastlaneCore::ConfigItem.new(
           key: :theme,
-          env_name: "APPLICATION_THEME",
+          env_name: "MAESTRO_SCREENSHOTS_APPLICATION_THEME",
           description: "Optional theme parameter (e.g., dark or light)",
           default_value: nil,
           optional: true
@@ -126,7 +126,7 @@ module Fastlane
       def self.hmac_secret_option
         FastlaneCore::ConfigItem.new(
           key: :hmac_secret,
-          env_name: "HMAC_SECRET",
+          env_name: "MAESTRO_SCREENSHOTS_HMAC_SECRET",
           description: "The HMAC secret used to sign the payload",
           optional: false,
           verify_block: proc do |value|
@@ -138,7 +138,7 @@ module Fastlane
       def self.url_option
         FastlaneCore::ConfigItem.new(
           key: :url,
-          env_name: "WEBHOOK_URL",
+          env_name: "MAESTRO_SCREENSHOTS_WEBHOOK_URL",
           description: "The URL to send the API request to",
           optional: false,
           verify_block: proc do |value|

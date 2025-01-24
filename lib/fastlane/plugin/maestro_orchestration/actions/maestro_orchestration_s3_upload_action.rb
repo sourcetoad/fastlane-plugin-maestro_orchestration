@@ -63,7 +63,7 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :bucket,
-            env_name: "S3_BUCKET",
+            env_name: "MAESTRO_SCREENSHOTS_S3_BUCKET",
             description: "The S3 bucket name where files will be uploaded",
             optional: false,
             verify_block: proc do |value|
@@ -72,7 +72,7 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :version,
-            env_name: "APP_VERSION",
+            env_name: "MAESTRO_SCREENSHOTS_APP_VERSION",
             description: "Version of the app that screenshots are taken from",
             optional: false,
             verify_block: proc do |value|
@@ -87,7 +87,7 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :theme,
-            env_name: "APPLICATION_THEME",
+            env_name: "MAESTRO_SCREENSHOTS_APPLICATION_THEME",
             description: "Optional theme parameter (e.g., dark or light)",
             default_value: nil,
             optional: true
