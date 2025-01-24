@@ -176,10 +176,22 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :theme,
-            env_name: "MAESTRO_THEME",
+            env_name: "APPLICATION_THEME",
             description: "Optional theme parameter (e.g., dark or light)",
             default_value: nil,
             optional: true
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :hmac_secret,
+            env_name: "HMAC_SECRET",
+            description: "The HMAC secret used to sign the payload",
+            optional: false
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :url,
+            env_name: "WEBHOOK_URL",
+            description: "The URL to send the API request to",
+            optional: false
           )
         ]
       end

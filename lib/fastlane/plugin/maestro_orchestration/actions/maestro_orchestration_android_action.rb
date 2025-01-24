@@ -45,7 +45,7 @@ module Fastlane
         sleep(5)
         adb.trigger(command: "emu kill", serial: devices.first.serial)
         UI.success("Android emulator killed. Process finished.")
-        
+
         UI.message("FOLDER PATH parameter is: #{params[:folder_path]}\n\n")
         Helper::MaestroOrchestrationHelper.upload_to_s3(folder_path: params[:folder_path], bucket: params[:bucket], version: params[:version], device: "android", theme: params[:theme])
       end
@@ -209,10 +209,22 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :theme,
-            env_name: "MAESTRO_THEME",
+            env_name: "APPLICATION_THEME",
             description: "Optional theme parameter (e.g., dark or light)",
             default_value: nil,
             optional: true
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :hmac_secret,
+            env_name: "HMAC_SECRET",
+            description: "The HMAC secret used to sign the payload",
+            optional: false
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :url,
+            env_name: "WEBHOOK_URL",
+            description: "The URL to send the API request to",
+            optional: false
           )
         ]
       end
