@@ -1,10 +1,5 @@
 require 'fastlane_core/ui/ui'
 require 'fastlane/action'
-require 'aws-sdk-s3'
-require 'openssl'
-require 'net/http'
-require 'uri'
-require 'json'
 
 module Fastlane
   UI = FastlaneCore::UI unless Fastlane.const_defined?(:UI)
