@@ -1,5 +1,10 @@
 require 'fastlane_core/ui/ui'
 require 'fastlane/action'
+require 'aws-sdk-s3'
+require 'openssl'
+require 'net/http'
+require 'uri'
+require 'json'
 
 module Fastlane
   UI = FastlaneCore::UI unless Fastlane.const_defined?(:UI)
@@ -12,6 +17,34 @@ module Fastlane
       #
       def self.show_message
         UI.message("Hello from the maestro_orchestration plugin helper!")
+      end
+
+      def self.upload_to_s3(folder_path:, bucket:, version:, device:, theme: nil)
+        UI.message("Uploading screenshots to S3...\n")
+        s3_client = Aws::S3::Client.new(
+          region: ENV.fetch('AWS_REGION', 'us-east-1'),
+          endpoint: 'http://s3.docker:10000',
+          force_path_style: true
+        )
+
+        # Define the base folder path in S3
+        base_path = "projects/PAD/screenshots/ver:#{version}"
+        base_path += "/theme:#{theme}" if theme
+        base_path += "/device:#{device}"
+
+        UI.message("Folder path: #{folder_path}")
+        Dir.glob("#{folder_path}/*").each do |file|
+          UI.message("This is the file: #{file}")
+          next if File.directory?(file)
+
+          file_name = File.basename(file)
+          s3_key = File.join(base_path, file_name)
+          UI.message("\nThis is the key: #{s3_key}\n")
+
+          UI.message("Uploading #{file} to s3://#{bucket}/#{s3_key}\n")
+          s3_client.put_object(bucket: bucket, key: s3_key, body: File.open(file))
+        end
+        UI.success("Upload to S3 completed.")
       end
     end
 
