@@ -21,8 +21,6 @@ module Fastlane
 
         s3_client = Aws::S3::Client.new(
           region: ENV.fetch('AWS_REGION', 'us-east-1'),
-          endpoint: 'http://s3.docker:10000',
-          force_path_style: true
         )
 
         # Define the base folder path in S3
@@ -63,7 +61,7 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :bucket,
-            env_name: "MAESTRO_SCREENSHOTS_S3_BUCKET",
+            env_name: "MAESTRO_SCREENSHOTS_PAD_BUCKET",
             description: "The S3 bucket name where files will be uploaded",
             optional: false,
             verify_block: proc do |value|

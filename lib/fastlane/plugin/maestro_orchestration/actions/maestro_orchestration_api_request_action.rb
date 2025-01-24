@@ -79,9 +79,8 @@ module Fastlane
       def self.bucket_option
         FastlaneCore::ConfigItem.new(
           key: :bucket,
-          env_name: "MAESTRO_SCREENSHOTS_S3_BUCKET",
+          env_name: "MAESTRO_SCREENSHOTS_PAD_BUCKET",
           description: "The S3 bucket name where files will be uploaded",
-          default_value: "pad",
           optional: false,
           verify_block: proc do |value|
             UI.user_error!("You must provide a valid bucket name using the `bucket` parameter.") unless value && !value.strip.empty?
