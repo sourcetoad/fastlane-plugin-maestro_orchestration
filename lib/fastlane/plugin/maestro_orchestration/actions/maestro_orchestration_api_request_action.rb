@@ -10,7 +10,7 @@ module Fastlane
   module Actions
     class MaestroOrchestrationApiRequestAction < Action
       def self.run(params)
-        required_params = [:version, :device, :hmac_secret, :url]
+        required_params = [:s3_path, :version, :device, :hmac_secret, :url]
         missing_params = required_params.select { |param| params[param].nil? }
 
         if missing_params.any?
@@ -57,6 +57,7 @@ module Fastlane
 
       def self.available_options
         [
+          s3_path_option,
           version_option,
           device_option,
           theme_option,
