@@ -20,11 +20,10 @@ module Fastlane
         UI.message("Uploading screenshots to S3...")
 
         s3_client = Aws::S3::Client.new(
-          region: ENV.fetch('AWS_REGION', 'us-east-1'),
+          region: ENV.fetch('AWS_REGION', 'us-east-1')
         )
 
-        # Define the base folder path in S3
-        base_path = "projects/PAD/screenshots/ver:#{params[:version]}"
+        base_path = "#{params[:s3_path]}/ver:#{params[:version]}"
         base_path += "/theme:#{params[:theme]}" if params[:theme]
         base_path += "/device:#{params[:device]}"
 
@@ -69,6 +68,13 @@ module Fastlane
             end
           ),
           FastlaneCore::ConfigItem.new(
+            key: :s3_path,
+            env_name: "MAESTRO_SCREENSHOTS_S3_PATH",
+            description: "The base S3 path where files will be uploaded.",
+            default_value: ENV.fetch("MAESTRO_ORCHESTRATION_S3_PATH"),
+            optional: false
+          ),
+          FastlaneCore::ConfigItem.new(
             key: :version,
             env_name: "MAESTRO_SCREENSHOTS_APP_VERSION",
             description: "Version of the app that screenshots are taken from",
@@ -100,5 +106,3 @@ module Fastlane
     end
   end
 end
-
-# Set up variable for base path because it cannot be exposed this much
