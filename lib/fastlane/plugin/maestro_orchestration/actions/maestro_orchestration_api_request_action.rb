@@ -8,7 +8,7 @@ require_relative '../helper/maestro_orchestration_helper'
 
 module Fastlane
   module Actions
-    class ApiRequestAction < Action
+    class MaestroOrchestrationApiRequestAction < Action
       def self.run(params)
         required_params = [:version, :device, :hmac_secret, :url]
         missing_params = required_params.select { |param| params[param].nil? }
@@ -57,8 +57,6 @@ module Fastlane
 
       def self.available_options
         [
-          folder_path_option,
-          bucket_option,
           version_option,
           device_option,
           theme_option,
