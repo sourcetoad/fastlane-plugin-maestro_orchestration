@@ -30,11 +30,16 @@ module Fastlane
           folder_path: base_path
         }
 
-        signature = "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', params[:hmac_secret], payload.to_json)}"
+        signature = "sha256=#{OpenSSL::HMAC.digest('SHA256', params[:hmac_secret], payload.to_json)}"
 
         uri = URI.parse(params[:url])
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = (uri.scheme == "https")
+
+        UI.message(folder_path: base_path)
+        UI.message(payload: payload)
+        UI.message(signature: signature)
+        UI.message(uri: uri)
 
         request = Net::HTTP::Post.new(uri.path, {
           "Content-Type" => "application/json",
