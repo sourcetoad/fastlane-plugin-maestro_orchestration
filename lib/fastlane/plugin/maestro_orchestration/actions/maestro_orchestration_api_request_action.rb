@@ -47,7 +47,7 @@ module Fastlane
         if response.code.to_i == 200
           UI.success("API request successful: #{response.body}")
         else
-          UI.user_error("API request failed: #{response.body}")
+          UI.user_error!("API request failed: #{response.body}")
         end
       end
 
