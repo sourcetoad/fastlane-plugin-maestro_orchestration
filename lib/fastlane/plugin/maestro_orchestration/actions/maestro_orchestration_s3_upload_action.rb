@@ -61,7 +61,7 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :bucket,
-            env_name: "MAESTRO_SCREENSHOTS_PAD_BUCKET",
+            env_name: "MAESTRO_SCREENSHOTS_S3_BUCKET",
             description: "The S3 bucket name where files will be uploaded",
             optional: false,
             verify_block: proc do |value|
@@ -79,6 +79,7 @@ module Fastlane
           ),
           FastlaneCore::ConfigItem.new(
             key: :device,
+            env_name: "MAESTRO_SCREENSHOTS_DEVICE",
             description: "Device type: android or ios",
             type: String,
             optional: false
@@ -99,3 +100,5 @@ module Fastlane
     end
   end
 end
+
+# Set up variable for base path because it cannot be exposed this much
