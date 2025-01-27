@@ -10,7 +10,7 @@ module Fastlane
   module Actions
     class ApiRequestAction < Action
       def self.run(params)
-        required_params = [:folder_path, :bucket, :version, :device, :hmac_secret, :url]
+        required_params = [:version, :device, :hmac_secret, :url]
         missing_params = required_params.select { |param| params[param].nil? }
 
         if missing_params.any?
@@ -20,10 +20,14 @@ module Fastlane
           raise "Missing required parameters: #{missing_params.join(', ')}"
         end
 
+        base_path = "#{params[:s3_path]}/ver:#{params[:version]}"
+        base_path += "/theme:#{params[:theme]}" if params[:theme]
+        base_path += "/device:#{params[:device]}"
+
         payload = {
           message: "Screenshots uploaded",
           version: params[:version],
-          folder_path: params[:folder_path]
+          folder_path: base_path
         }
 
         signature = "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', params[:hmac_secret], payload.to_json)}"
@@ -63,28 +67,12 @@ module Fastlane
         ]
       end
 
-      def self.folder_path_option
+      def self.s3_path_option
         FastlaneCore::ConfigItem.new(
-          key: :folder_path,
-          env_name: "MAESTRO_SCREENSHOTS_FOLDER_PATH",
-          description: "Path to the folder to be uploaded to S3",
-          default_value: File.expand_path("../../.maestro/screenshots", FastlaneCore::Helper.fastlane_enabled_folder_path),
-          optional: false,
-          verify_block: proc do |value|
-            UI.user_error!("You must provide a valid folder path using the `folder_path` parameter.") unless value && !value.strip.empty?
-          end
-        )
-      end
-
-      def self.bucket_option
-        FastlaneCore::ConfigItem.new(
-          key: :bucket,
-          env_name: "MAESTRO_SCREENSHOTS_S3_BUCKET",
-          description: "The S3 bucket name where files will be uploaded",
-          optional: false,
-          verify_block: proc do |value|
-            UI.user_error!("You must provide a valid bucket name using the `bucket` parameter.") unless value && !value.strip.empty?
-          end
+          key: :s3_path,
+          env_name: "MAESTRO_SCREENSHOTS_S3_PATH",
+          description: "The base S3 path (after the bucket name) where files will be uploaded: $bucket/$s3_path",
+          optional: false
         )
       end
 
