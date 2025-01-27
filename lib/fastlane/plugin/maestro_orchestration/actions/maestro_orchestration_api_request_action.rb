@@ -30,7 +30,7 @@ module Fastlane
           folder_path: base_path
         }
 
-        signature = "sha256=#{OpenSSL::HMAC.digest('SHA256', params[:hmac_secret], payload.to_json)}"
+        signature = "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', params[:hmac_secret], payload.to_json)}"
 
         uri = URI.parse(params[:url])
         http = Net::HTTP.new(uri.host, uri.port)
