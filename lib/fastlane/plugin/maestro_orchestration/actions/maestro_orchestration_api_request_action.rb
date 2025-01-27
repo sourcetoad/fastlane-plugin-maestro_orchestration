@@ -30,29 +30,29 @@ module Fastlane
           folder_path: base_path
         }
 
-        signature = "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', params[:hmac_secret], payload.to_json)}"
+        payload_json = payload.to_json
+        UI.message("Raw Payload JSON: #{payload_json}")
+
+        signature = "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', params[:hmac_secret], payload_json)}"
+
+        UI.message("signature: #{signature}")
 
         uri = URI.parse(params[:url])
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = (uri.scheme == "https")
 
-        UI.message(folder_path: base_path)
-        UI.message(payload: payload)
-        UI.message(signature: signature)
-        UI.message(uri: uri)
-
         request = Net::HTTP::Post.new(uri.path, {
           "Content-Type" => "application/json",
           "X-Action-Signature" => signature
         })
-        request.body = payload.to_json
+        request.body = payload_json
 
         response = http.request(request)
 
-        if response.code.to_i == 200
+        if response.kind_of?(Net::HTTPSuccess)
           UI.success("API request successful: #{response.body}")
         else
-          UI.user_error!("API request failed: #{response.body}")
+          UI.user_error!("API request failed: #{response.code} - #{response.body}")
         end
       end
 
