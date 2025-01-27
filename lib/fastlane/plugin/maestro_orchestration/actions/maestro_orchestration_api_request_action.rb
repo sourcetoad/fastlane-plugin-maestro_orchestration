@@ -49,7 +49,7 @@ module Fastlane
 
         response = http.request(request)
 
-        if response.is_a?(Net::HTTPSuccess)
+        if response.kind_of?(Net::HTTPSuccess)
           UI.success("API request successful: #{response.body}")
         else
           UI.user_error!("API request failed: #{response.code} - #{response.body}")
