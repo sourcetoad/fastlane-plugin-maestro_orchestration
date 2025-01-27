@@ -70,8 +70,8 @@ module Fastlane
           FastlaneCore::ConfigItem.new(
             key: :s3_path,
             env_name: "MAESTRO_SCREENSHOTS_S3_PATH",
-            description: "The base S3 path where files will be uploaded.",
-            default_value: ENV.fetch("MAESTRO_ORCHESTRATION_S3_PATH"),
+            description: "The base S3 path where files will be uploaded",
+            default_value: ENV.fetch("MAESTRO_ORCHESTRATION_S3_PATH", "projects/PAD/screenshots"),
             optional: false
           ),
           FastlaneCore::ConfigItem.new(
