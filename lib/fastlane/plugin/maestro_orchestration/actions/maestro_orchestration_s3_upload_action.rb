@@ -33,7 +33,6 @@ module Fastlane
 
           file_name = File.basename(file)
           s3_key = File.join(base_path, file_name)
-          UI.message("\nThis is the key: #{s3_key}\n")
 
           UI.message("Uploading #{file} to s3://#{params[:bucket]}/#{s3_key}")
           s3_client.put_object(bucket: params[:bucket], key: s3_key, body: File.open(file))

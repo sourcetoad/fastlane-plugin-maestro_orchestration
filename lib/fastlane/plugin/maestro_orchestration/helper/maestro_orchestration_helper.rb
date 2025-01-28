@@ -50,8 +50,6 @@ module Fastlane
         raise "AVD name is required" if name.nil? || name.empty?
         raise "System image package is required" if package.nil? || package.empty?
 
-        UI.message("This is the package parameter passed: #{package}")
-
         command = [
           "create avd",
           "-n #{name.shellescape}",
@@ -72,7 +70,6 @@ module Fastlane
         if (emulator_path.nil? || emulator_path == "avdmanager") && android_home
           emulator_path = File.join(android_home, "emulator", "emulator")
         end
-        UI.message("This is the emulator path: #{emulator_path}")
 
         self.emulator_path = Helper.get_executable_path(File.expand_path(emulator_path))
       end

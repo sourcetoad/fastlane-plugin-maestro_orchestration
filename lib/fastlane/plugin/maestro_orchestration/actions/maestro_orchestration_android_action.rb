@@ -17,10 +17,8 @@ module Fastlane
           raise "Missing required parameters: #{missing_params.join(', ')}"
         end
 
-        UI.message("Emualtor_device: #{params[:emulator_device]}")
         UI.message("--------------\n\nSDK DIR: #{params[:sdk_dir]}\n\n--------------")
         adb = Helper::AdbHelper.new
-        UI.message("ADB: #{adb.adb_path}")
 
         setup_emulator(params)
         sleep(5)
@@ -112,7 +110,6 @@ module Fastlane
         serial = adb.devices.first.serial
 
         apk_path = Dir["app/build/outputs/apk/release/*.apk"].first
-        UI.success("APK path: #{apk_path}")
 
         if apk_path.nil?
           UI.user_error!("Error: APK file not found in build outputs.")
