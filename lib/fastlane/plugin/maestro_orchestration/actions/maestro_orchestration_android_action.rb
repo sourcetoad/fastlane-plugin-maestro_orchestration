@@ -67,18 +67,18 @@ module Fastlane
         UI.message("Waiting for all emulators to stop...")
         sleep(10)
 
-        UI.message("Restarting ADB server... ---------------- \n\n")
-        adb.trigger(command: "kill-server")
-        sleep(5)
-        adb.trigger(command: "start-server")
-        UI.success("ADB server restarted. ---------------- \n\n")
-
         UI.message("Setting up new Android emulator...")
         avdmanager.create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
 
         UI.message("Starting Android emulator...")
         emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
         adb.trigger(command: "wait-for-device", serial: "emulator-#{params[:emulator_port]}")
+
+        UI.message("Restarting ADB server... ---------------- \n\n")
+        adb.trigger(command: "kill-server")
+        sleep(5)
+        adb.trigger(command: "start-server")
+        UI.success("ADB server restarted. ---------------- \n\n")
 
         booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, 10, 3, "emulator-#{params[:emulator_port]}")
 
