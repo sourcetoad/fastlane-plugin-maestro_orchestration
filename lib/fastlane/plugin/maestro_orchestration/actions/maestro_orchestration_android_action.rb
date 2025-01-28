@@ -17,10 +17,8 @@ module Fastlane
           raise "Missing required parameters: #{missing_params.join(', ')}"
         end
 
-        UI.message("Emualtor_device: #{params[:emulator_device]}")
         UI.message("--------------\n\nSDK DIR: #{params[:sdk_dir]}\n\n--------------")
         adb = Helper::AdbHelper.new
-        UI.message("ADB: #{adb.adb_path}")
 
         setup_emulator(params)
         sleep(5)
@@ -76,17 +74,24 @@ module Fastlane
         emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
         adb.trigger(command: "wait-for-device", serial: "emulator-#{params[:emulator_port]}")
 
-        loop do
-          result = `#{adb.adb_path} -e shell getprop sys.boot_completed`.strip
-          UI.message("ADB Response: #{result.inspect}")
-          if result == "1"
-            UI.success("Device booted!")
-            break
-          end
-          sleep(5)
+        booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, 10, 3, "emulator-#{params[:emulator_port]}")
+
+        unless booted
+          UI.error("Emulator failed to boot after #{max_retries} attempts. Restarting ADB server...")
+          adb.trigger(command: "kill-server")
+          adb.trigger(command: "start-server")
+          UI.message("ADB server restarted. Retrying boot process...")
+
+          # Retry boot process after restarting ADB server
+          booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, 10, 3, "emulator-#{params[:emulator_port]}")
         end
 
-        UI.success("Android emulator started.")
+        if booted
+          UI.success("Emulator is online and fully booted!")
+        else
+          UI.error("Emulator failed to boot even after restarting ADB server.")
+          raise "Failed to boot emulator. Please check emulator logs and configuration."
+        end
       end
 
       def self.demo_mode(params)
@@ -112,7 +117,6 @@ module Fastlane
         serial = adb.devices.first.serial
 
         apk_path = Dir["app/build/outputs/apk/release/*.apk"].first
-        UI.success("APK path: #{apk_path}")
 
         if apk_path.nil?
           UI.user_error!("Error: APK file not found in build outputs.")

@@ -13,6 +13,29 @@ module Fastlane
       def self.show_message
         UI.message("Hello from the maestro_orchestration plugin helper!")
       end
+
+      def self.wait_for_emulator_to_boot(adb, max_retries, wait_interval, serial)
+        retries = 0
+        booted = false
+
+        while retries < max_retries
+          result = `#{adb.adb_path} -e shell getprop sys.boot_completed`.strip
+          UI.message("ADB Response (sys.boot_completed): #{result.inspect}")
+
+          if result == "1"
+            booted = true
+            break
+          elsif result.empty? || result.include?("device offline") || result.include?("device unauthorized")
+            UI.error("ADB issue detected: #{result}")
+          end
+
+          retries += 1
+          UI.message("Retrying... Attempt #{retries}/#{max_retries}")
+          sleep(wait_interval) # Wait before retrying
+        end
+
+        booted
+      end
     end
 
     class AvdHelper
@@ -50,8 +73,6 @@ module Fastlane
         raise "AVD name is required" if name.nil? || name.empty?
         raise "System image package is required" if package.nil? || package.empty?
 
-        UI.message("This is the package parameter passed: #{package}")
-
         command = [
           "create avd",
           "-n #{name.shellescape}",
@@ -72,7 +93,6 @@ module Fastlane
         if (emulator_path.nil? || emulator_path == "avdmanager") && android_home
           emulator_path = File.join(android_home, "emulator", "emulator")
         end
-        UI.message("This is the emulator path: #{emulator_path}")
 
         self.emulator_path = Helper.get_executable_path(File.expand_path(emulator_path))
       end
