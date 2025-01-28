@@ -67,6 +67,12 @@ module Fastlane
         UI.message("Waiting for all emulators to stop...")
         sleep(10)
 
+        UI.message("Restarting ADB server... ---------------- \n\n")
+        adb.trigger(command: "kill-server")
+        sleep(5)
+        adb.trigger(command: "start-server")
+        UI.success("ADB server restarted. ---------------- \n\n")
+
         UI.message("Setting up new Android emulator...")
         avdmanager.create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
 
