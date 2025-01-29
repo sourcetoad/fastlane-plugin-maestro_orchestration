@@ -74,7 +74,8 @@ module Fastlane
         emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
         adb.trigger(command: "wait-for-device", serial: "emulator-#{params[:emulator_port]}")
 
-        booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, 10, "emulator-#{params[:emulator_port]}")
+        max_retries = 10
+        booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, max_retries, "emulator-#{params[:emulator_port]}")
 
         unless booted
           UI.error("Emulator failed to boot after #{max_retries} attempts. Restarting ADB server...")
