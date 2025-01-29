@@ -17,7 +17,6 @@ module Fastlane
       def self.wait_for_emulator_to_boot(adb, max_retries, serial)
         retries = 0
         booted = false
-        wait_interval = 1
 
         while retries < max_retries
           result = `#{adb.adb_path} -e shell getprop sys.boot_completed`.strip
