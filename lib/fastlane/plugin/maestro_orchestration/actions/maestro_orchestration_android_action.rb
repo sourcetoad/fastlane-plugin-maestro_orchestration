@@ -74,12 +74,6 @@ module Fastlane
         emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
         adb.trigger(command: "wait-for-device", serial: "emulator-#{params[:emulator_port]}")
 
-        UI.message("Restarting ADB server... ---------------- \n\n")
-        adb.trigger(command: "kill-server")
-        sleep(5)
-        adb.trigger(command: "start-server")
-        UI.success("ADB server restarted. ---------------- \n\n")
-
         booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, 10, 3, "emulator-#{params[:emulator_port]}")
 
         unless booted
