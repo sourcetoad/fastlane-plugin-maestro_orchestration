@@ -14,9 +14,10 @@ module Fastlane
         UI.message("Hello from the maestro_orchestration plugin helper!")
       end
 
-      def self.wait_for_emulator_to_boot(adb, max_retries, wait_interval, serial)
+      def self.wait_for_emulator_to_boot(adb, max_retries, serial)
         retries = 0
         booted = false
+        wait_interval = 1
 
         while retries < max_retries
           result = `#{adb.adb_path} -e shell getprop sys.boot_completed`.strip
@@ -31,7 +32,11 @@ module Fastlane
 
           retries += 1
           UI.message("Retrying... Attempt #{retries}/#{max_retries}")
-          sleep(wait_interval) # Wait before retrying
+
+          wait_interval = [1 + (2**retries), 30].min
+
+          UI.message("Waiting for #{wait_interval} seconds before retrying...")
+          sleep(wait_interval)
         end
 
         booted
@@ -113,6 +118,10 @@ module Fastlane
         command = [
           "-avd #{name.shellescape}",
           "-port #{port.shellescape}",
+          "-wipe-data",
+          "-no-boot-anim",
+          "-no-snapshot",
+          "-no-audio",
           "> /dev/null 2>&1 &"
         ].join(" ")
 
