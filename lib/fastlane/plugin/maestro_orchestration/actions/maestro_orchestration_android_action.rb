@@ -74,13 +74,7 @@ module Fastlane
         emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
         adb.trigger(command: "wait-for-device", serial: "emulator-#{params[:emulator_port]}")
 
-        UI.message("Restarting ADB server... ---------------- \n\n")
-        adb.trigger(command: "kill-server")
-        sleep(5)
-        adb.trigger(command: "start-server")
-        UI.success("ADB server restarted. ---------------- \n\n")
-
-        booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, 10, 3, "emulator-#{params[:emulator_port]}")
+        booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, 10, "emulator-#{params[:emulator_port]}")
 
         unless booted
           UI.error("Emulator failed to boot after #{max_retries} attempts. Restarting ADB server...")
@@ -89,7 +83,7 @@ module Fastlane
           UI.message("ADB server restarted. Retrying boot process...")
 
           # Retry boot process after restarting ADB server
-          booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, 10, 3, "emulator-#{params[:emulator_port]}")
+          booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, 10, "emulator-#{params[:emulator_port]}")
         end
 
         if booted
