@@ -64,26 +64,26 @@ Sends an API request with a signed payload, typically used to notify external sy
 ```ruby
 lane :maestro do |options|
   maestro_orchestration_ios(
-    scheme: ENV["MAESTRO_IOS_SCHEME"],
-    workspace: ENV["MAESTRO_IOS_WORKSPACE"],
-    maestro_flow_file: ENV["MAESTRO_FLOW_FILE"]
+    scheme: your_app,
+    workspace: your_app.xcworskapce,
+    maestro_flow_file: "../.maestro/flow_ios.yaml"
   )
 
   maestro_orchestration_s3_upload(
-    folder_path: ENV["MAESTRO_SCREENSHOTS_FOLDER_PATH"],
-    bucket: ENV["MAESTRO_SCREENSHOTS_S3_BUCKET"],
-    s3_path: ENV["MAESTRO_SCREENSHOTS_S3_PATH"],
-    version: ENV["MAESTRO_SCREENSHOTS_APP_VERSION"],
-    device: ENV["MAESTRO_SCREENSHOTS_DEVICE"],
-    theme: ENV["MAESTRO_SCREENSHOTS_APPLICATION_THEME"]
+    folder_path: "../.maestro/android/screenshots,
+    bucket: "your-s3-bucket-name",
+    s3_path: "path/to/s3/folder",
+    version: "1.0.0",
+    device: "android",
+    theme: "dark" # optional
   )
 
   maestro_orchestration_api_request(
-    s3_path: ENV["MAESTRO_SCREENSHOTS_S3_PATH"],
-    version: ENV["MAESTRO_SCREENSHOTS_APP_VERSION"],
-    device: ENV["MAESTRO_SCREENSHOTS_DEVICE"],
-    hmac_secret: ENV["MAESTRO_SCREENSHOTS_HMAC_SECRET"],
-    url: ENV["MAESTRO_SCREENSHOTS_WEBHOOK_URL"]
+    s3_path: "path/to/s3/folder",
+    version: "1.0.0",
+    device: "android",
+    hmac_secret: "your-hmac-secret",
+    url: "https://your-webhook-url.com"
   )
 end
 ```
@@ -91,24 +91,24 @@ end
 ```ruby
 lane :maestro do |options|
   maestro_orchestration_android(
-    maestro_flow_file: ENV["MAESTRO_FLOW_FILE"]
+    maestro_flow_file: "../.maestro/flow_android.yaml
   )
 
   maestro_orchestration_s3_upload(
-    folder_path: ENV["MAESTRO_SCREENSHOTS_FOLDER_PATH"],
-    bucket: ENV["MAESTRO_SCREENSHOTS_S3_BUCKET"],
-    s3_path: ENV["MAESTRO_SCREENSHOTS_S3_PATH"],
-    version: ENV["MAESTRO_SCREENSHOTS_APP_VERSION"],
-    device: ENV["MAESTRO_SCREENSHOTS_DEVICE"],
-    theme: ENV["MAESTRO_SCREENSHOTS_APPLICATION_THEME"]
+    folder_path: "../.maestro/android/screenshots,
+    bucket: "your-s3-bucket-name",
+    s3_path: "path/to/s3/folder",
+    version: "1.0.0",
+    device: "android",
+    theme: "dark" # optional
   )
 
   maestro_orchestration_api_request(
-    s3_path: ENV["MAESTRO_SCREENSHOTS_S3_PATH"],
-    version: ENV["MAESTRO_SCREENSHOTS_APP_VERSION"],
-    device: ENV["MAESTRO_SCREENSHOTS_DEVICE"],
-    hmac_secret: ENV["MAESTRO_SCREENSHOTS_HMAC_SECRET"],
-    url: ENV["MAESTRO_SCREENSHOTS_WEBHOOK_URL"]
+    s3_path: "path/to/s3/folder",
+    version: "1.0.0",
+    device: "android",
+    hmac_secret: "your-hmac-secret",
+    url: "https://your-webhook-url.com"
   )
 end
 ```
