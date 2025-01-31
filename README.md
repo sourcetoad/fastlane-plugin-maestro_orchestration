@@ -1,6 +1,6 @@
 # maestro_orchestration plugin
 
-[![fastlane Plugin Badge](https://rawcdn.githack.com/fastlane/fastlane/master/fastlane/assets/plugin-badge.svg)](https://rubygems.org/gems/fastlane-plugin-maestro_orchestration)
+[![Gem Version](https://badge.fury.io/rb/fastlane-plugin-maestro_orchestration.svg)](https://badge.fury.io/rb/fastlane-plugin-maestro_orchestration)
 
 ## Getting Started
 
