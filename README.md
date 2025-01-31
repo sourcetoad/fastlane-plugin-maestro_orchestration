@@ -17,46 +17,50 @@ The `maestro_orchestration` plugin enhances your Fastlane workflows by integrati
 ### 1. `maestro_orchestration` - separate actions for iOS and Android platform.
 Executes Maestro test suites within your Fastlane lanes, facilitating automated UI testing for mobile applications.
 
-**Parameters `iOS`:**
+## Parameters `iOS`
 
-  -  `workspace`: Path to the project's Xcode workspace directory.
-  -  `scheme`: The iOS app scheme to build.
-  -  `maestro_flow_file`: The path to the Maestro flows YAML file.
-  -  `simulator_name` (Optional): The iOS simulator device to boot. Defaults to "iPhone 15".
-  -  `device_type` (Optional): The iOS simulator device type for new simulator (iPhone #, iPad, etc...). Defaults to iPhone 15 - com.apple.CoreSimulator.SimDeviceType.iPhone-15.
+| Parameter           | Env Name | Notes                                                                                                | Default                                           |
+| ------------------- | -------- | --------------------------------------------------------------------------------------------------   | ------------------------------------------------- |
+| `workspace`         | `MAESTRO_IOS_WORKSPACE`      | Path to the project's Xcode workspace directory.                                 | **Required**                                      |
+| `scheme`            | `MAESTRO_IOS_SCHEME`         | The iOS app scheme to build.                                                     | **Required**                                      |
+| `maestro_flow_file` | `MAESTRO_IOS_FLOW_FILE`      | The path to the Maestro flows YAML file.                                         | **Required**                                      |
+| `simulator_name`    | `MAESTRO_IOS_DEVICE_NAME`    | The iOS simulator device to boot.                                                | 'iPhone 15'                                       |
+| `device_type`       | `MAESTRO_IOS_DEVICE`         | The iOS simulator device type for new simulator (e.g., iPhone #, iPad, etc...).  | 'com.apple.CoreSimulator.SimDeviceType.iPhone-15' |
 
-**Parameters `Android`:**
+## Parameters `Android`
 
-  - `sdk_dir` (Optional): Path to the Android SDK DIR. Set as optional but it searches env variables `ENV["ANDROID_HOME"]` or `ENV["ANDROID_SDK_ROOT"]` or defaults to `"~/Library/Android/sdk"`.
-  -  `maestro_flow_file`: The path to the Maestro flows YAML file.
-  - `emulator_name` (Optional): Name of the AVD. Defaults to "Maestro_Android_Emulator"
-  - `emulator_package (Optional)`: The selected system image of the emulator.
-  - `emulator_device` (Optional): Type of android device.
-  - `emulator_port` (Optional): Port of the emulator.
+| Parameter           | Env Name                           | Notes                                      | Default                                                                                   |
+| ------------------- | ---------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `sdk_dir`           | `MAESTRO_ANDROID_SDK_DIR`          | Path to the Android SDK DIR.               | **Required** - `ENV["ANDROID_HOME"]`, `ENV["ANDROID_SDK_ROOT"]`, `~/Library/Android/sdk`  |
+| `maestro_flow_file` | `MAESTRO_IOS_FLOW_FILE`            | The path to the Maestro flows YAML file.   | **Required**                                                                              |
+| `emulator_name`     | `MAESTRO_AVD_NAME`                 | Name of the AVD.                           | 'Maestro\_Android\_Emulator'                                                              |
+| `emulator_package`  | `MAESTRO_AVD_PACKAGE`              | The selected system image of the emulator. | 'system-images;android-35;google_apis_playstore;arm64-v8a'                                |
+| `emulator_device`   | `MAESTRO_AVD_DEVICE`               | Type of android device.                    | 'pixel_7_pro'                                                                             |
+| `emulator_port`     | `MAESTRO_AVD_PORT`                 | Port of the emulator.                      | 5554                                                                                      |
 
 ### 2. `maestro_orchestartion_s3_upload`
 Uploads a folder of files (such as screenshots) to an S3 bucket, organizing them based on the app version, theme, and device type.
 
-**Parameters:**
-
-  - `folder_path`: Path to the local folder containing the files to upload.
-  - `bucket`: The name of the S3 bucket where files will be uploaded.
-  - `s3_path`: The base S3 path (excluding the bucket name).
-  - `version`: The app version associated with the uploaded files.
-  - `device`: The target device type (android or ios).
-  - `theme` (Optional): The application theme (e.g., dark or light).
+| Parameter     | Env Name | Notes                                                    | Default                                           |
+| ------------- | -------- | -------------------------------------------------------- | ------------------------------------------------- |
+| `folder_path` | `MAESTRO_SCREENSHOTS_FOLDER_PATH`            | Path to the local folder containing the files to upload. | **Required**  |
+| `bucket`      | `MAESTRO_SCREENSHOTS_S3_BUCKET`              | The name of the S3 bucket where files will be uploaded.  | **Required**  |
+| `s3_path`     | `MAESTRO_SCREENSHOTS_S3_PATH`                | The base S3 path (excluding the bucket name).            | **Required**  |
+| `version`     | `MAESTRO_SCREENSHOTS_APP_VERSION`            | The app version associated with the uploaded files.      | **Required**  |
+| `device`      | `MAESTRO_SCREENSHOTS_DEVICE`                 | The target device type (android or ios).                 | **Required**  |
+| `theme`       | `MAESTRO_SCREENSHOTS_APPLICATION_THEME`      | The application theme (e.g., dark or light).             | Optional      |
 
 ### 3. `maestro_orchestration_api_request`
 Sends an API request with a signed payload, typically used to notify external systems of events such as the completion of test runs or the availability of new screenshots.
 
-**Parameters:**
-
-  - `s3_path`: The base S3 path (excluding the bucket name) where files are uploaded.
-  - `version`: The version of the app associated with the screenshots or test results.
-  - `device`: The device type (android or ios).
-  - `theme` (Optional): The application theme (e.g., dark or light).
-  - `hmac_secret`: The HMAC secret used to sign the payload for security purposes.
-  - `url`: The endpoint URL to which the API request is sent.
+| Parameter     | Env Name | Notes                                                                   | Default                                          |
+| ------------- | -------- | ----------------------------------------------------------------------- | ------------------------------------------------ |
+| `s3_path`     | `MAESTRO_SCREENSHOTS_S3_PATH`                | The base S3 path (excluding the bucket name) where files are uploaded.  | **Required** |
+| `version`     | `MAESTRO_SCREENSHOTS_APP_VERSION`            | The version of the app associated with the screenshots or test results. | **Required** |
+| `device`      | `MAESTRO_SCREENSHOTS_APP_VERSION`            | The device type (android or ios).                                       | **Required** |
+| `theme`       | `MAESTRO_SCREENSHOTS_APPLICATION_THEME`      | The application theme (e.g., dark or light).                            | Optional     |
+| `hmac_secret` | `MAESTRO_SCREENSHOTS_HMAC_SECRET`            | The HMAC secret used to sign the payload for security purposes.         | **Required** |
+| `url`         | `MAESTRO_SCREENSHOTS_WEBHOOK_URL`            | The endpoint URL to which the API request is sent.                      | **Required** |
 
 ## Example
 
