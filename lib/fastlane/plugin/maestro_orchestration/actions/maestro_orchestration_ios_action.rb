@@ -36,43 +36,43 @@ module Fastlane
       def self.boot_ios_simulator(params)
         device_name = params[:simulator_name]
         device_type = params[:device_type]
-      
+
         UI.message("Shutting down any booted iOS simulator...")
         system("xcrun simctl shutdown booted")
-      
+
         UI.message("Checking if simulator '#{device_name}' exists...")
         simulators_list = `xcrun simctl list devices -j`
         simulator_data = JSON.parse(simulators_list)["devices"].values.flatten
-      
+
         existing_simulator = simulator_data.find { |sim| sim["name"] == device_name }
-      
+
         if existing_simulator
           device_id = existing_simulator["udid"]
           UI.message("Found existing simulator '#{device_name}' with ID #{device_id}. Deleting it...")
           system("xcrun simctl delete #{device_id}")
         end
-      
+
         UI.message("Creating a new simulator '#{device_name}'...")
         system("xcrun simctl create '#{device_name}' #{device_type}")
-      
+
         # Refresh simulator list after creation
         simulators_list = `xcrun simctl list devices -j`
         new_simulator = JSON.parse(simulators_list)["devices"].values.flatten.find { |sim| sim["name"] == device_name }
-      
+
         unless new_simulator
           UI.user_error!("Failed to create simulator '#{device_name}'.")
         end
-      
+
         new_device_id = new_simulator["udid"]
         UI.message("Booting the new simulator '#{device_name}' (ID: #{new_device_id})...")
         system("xcrun simctl boot '#{new_device_id}'")
-      
+
         UI.message("Waiting for the simulator to fully boot...")
         until `xcrun simctl list devices`.include?("#{device_name} (#{new_device_id}) (Booted)")
           UI.message("Waiting for the simulator to boot...")
           sleep(10)
         end
-      
+
         UI.success("Simulator '#{device_name}' is booted and ready.")
       end
 
