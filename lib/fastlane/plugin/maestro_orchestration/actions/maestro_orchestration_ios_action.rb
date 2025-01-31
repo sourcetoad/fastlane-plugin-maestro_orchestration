@@ -113,7 +113,7 @@ module Fastlane
         [
           FastlaneCore::ConfigItem.new(
             key: :simulator_name,
-            env_name: "MAESTRO_IOS_DEVICE",
+            env_name: "MAESTRO_IOS_DEVICE_NAME",
             description: "The iOS simulator device to boot",
             default_value: "iPhone 15",
             optional: true,
