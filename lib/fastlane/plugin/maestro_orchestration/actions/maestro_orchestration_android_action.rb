@@ -84,7 +84,7 @@ module Fastlane
           UI.message("ADB server restarted. Retrying boot process...")
 
           # Retry boot process after restarting ADB server
-          booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, 10, "emulator-#{params[:emulator_port]}")
+          booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, max_retries, "emulator-#{params[:emulator_port]}")
         end
 
         if booted
