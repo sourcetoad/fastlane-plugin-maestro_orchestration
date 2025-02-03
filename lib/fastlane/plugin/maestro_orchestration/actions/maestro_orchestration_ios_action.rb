@@ -16,6 +16,12 @@ module Fastlane
           raise "Missing required parameters: #{missing_params.join(', ')}"
         end
 
+        if params[:clear_maestro_logs]
+          UI.message("Clearing previous Maestro logs...")
+          sh("rm -rf ~/.maestro/tests/*")
+          UI.success("Previous Maestro logs cleared.")
+        end
+
         boot_ios_simulator(params)
         demo_mode(params)
         build_and_install_ios_app(params)
@@ -154,6 +160,14 @@ module Fastlane
             description: "The path to the Maestro flows YAML file",
             optional: false,
             type: String
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :clear_maestro_logs,
+            env_name: "MAESTRO_CLEAR_LOGS",
+            description: "If true, clears all previous Maestro logs before running tests",
+            type: Boolean,
+            default_value: true,
+            optional: true
           )
         ]
       end

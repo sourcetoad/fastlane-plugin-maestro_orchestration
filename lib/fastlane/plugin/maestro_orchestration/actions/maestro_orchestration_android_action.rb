@@ -18,6 +18,12 @@ module Fastlane
         end
 
         UI.message("--------------\n\nSDK DIR: #{params[:sdk_dir]}\n\n--------------")
+        if params[:clear_maestro_logs]
+          UI.message("Clearing previous Maestro logs...")
+          sh("rm -rf ~/.maestro/tests/*")
+          UI.success("Previous Maestro logs cleared.")
+        end
+
         adb = Helper::AdbHelper.new
 
         setup_emulator(params)
@@ -185,6 +191,14 @@ module Fastlane
             description: "The path to the Maestro flow YAML file",
             optional: false,
             type: String
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :clear_maestro_logs,
+            env_name: "MAESTRO_CLEAR_LOGS",
+            description: "If true, clears all previous Maestro logs before running tests",
+            type: Boolean,
+            default_value: true,
+            optional: true
           )
         ]
       end
