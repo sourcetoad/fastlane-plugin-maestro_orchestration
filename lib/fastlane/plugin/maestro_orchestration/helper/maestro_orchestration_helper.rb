@@ -44,14 +44,47 @@ module Fastlane
       def self.clear_maestro_logs(clear_logs)
         return unless clear_logs
 
-        UI.message("Clearing previous Maestro logs using Ruby...")
-        logs_path = File.expand_path("~/.maestro/tests/*")
+        logs_path = File.expand_path("~/.maestro/tests")
 
-        Dir.glob(logs_path).each do |file|
-          FileUtils.rm_rf(file)
+        unless Dir.exist?(logs_path)
+          UI.message("No Maestro logs directory found.")
+          return
+        end
+
+        UI.message("Clearing previous Maestro logs using Ruby...")
+
+        # Handle file and directory removal separately
+        Dir.glob(File.join(logs_path, "*")).each do |path|
+          if File.directory?(path)
+            clear_directory(path)
+          else
+            delete_file(path)
+          end
         end
 
         UI.success("Previous Maestro logs cleared.")
+      end
+
+      def self.clear_directory(directory_path)
+        Dir.glob(File.join(directory_path, "**", "*")).reverse_each do |subpath|
+          if File.directory?(subpath)
+            Dir.rmdir(subpath)
+          else
+            File.delete(subpath)
+          end
+        rescue StandardError => e
+          UI.error("Error removing #{subpath}: #{e.message}")
+        end
+
+        Dir.rmdir(directory_path)
+      rescue StandardError => e
+        UI.error("Error removing directory #{directory_path}: #{e.message}")
+      end
+
+      def self.delete_file(file_path)
+        File.delete(file_path)
+      rescue StandardError => e
+        UI.error("Error removing file #{file_path}: #{e.message}")
       end
     end
 
