@@ -2,6 +2,7 @@ require 'fastlane/action'
 require 'fastlane_core/configuration/config_item'
 require 'fastlane/helper/adb_helper'
 require_relative '../helper/maestro_orchestration_helper'
+require 'fileutils'
 
 module Fastlane
   module Actions
@@ -19,8 +20,13 @@ module Fastlane
 
         UI.message("--------------\n\nSDK DIR: #{params[:sdk_dir]}\n\n--------------")
         if params[:clear_maestro_logs]
-          UI.message("Clearing previous Maestro logs...")
-          sh("rm -rf ~/.maestro/tests/*")
+          UI.message("Clearing previous Maestro logs using Ruby...")
+          logs_path = File.expand_path("~/.maestro/tests/*")
+        
+          Dir.glob(logs_path).each do |file|
+            FileUtils.rm_rf(file)
+          end
+        
           UI.success("Previous Maestro logs cleared.")
         end
 
