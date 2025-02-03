@@ -40,6 +40,19 @@ module Fastlane
 
         booted
       end
+
+      def self.clear_maestro_logs(clear_logs)
+        return unless clear_logs
+
+        UI.message("Clearing previous Maestro logs using Ruby...")
+        logs_path = File.expand_path("~/.maestro/tests/*")
+
+        Dir.glob(logs_path).each do |file|
+          FileUtils.rm_rf(file)
+        end
+
+        UI.success("Previous Maestro logs cleared.")
+      end
     end
 
     class AvdHelper

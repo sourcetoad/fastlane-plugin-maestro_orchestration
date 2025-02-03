@@ -18,17 +18,7 @@ module Fastlane
           raise "Missing required parameters: #{missing_params.join(', ')}"
         end
 
-        UI.message("--------------\n\nSDK DIR: #{params[:sdk_dir]}\n\n--------------")
-        if params[:clear_maestro_logs]
-          UI.message("Clearing previous Maestro logs using Ruby...")
-          logs_path = File.expand_path("~/.maestro/tests/*")
-        
-          Dir.glob(logs_path).each do |file|
-            FileUtils.rm_rf(file)
-          end
-        
-          UI.success("Previous Maestro logs cleared.")
-        end
+        Helper::MaestroOrchestrationHelper.clear_maestro_logs(params[:clear_maestro_logs])
 
         adb = Helper::AdbHelper.new
 
