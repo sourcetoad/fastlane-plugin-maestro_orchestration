@@ -194,3 +194,5 @@ Bundler/OrderedGems:
 Gemspec/DevelopmentDependencies:
   Enabled: true
   EnforcedStyle: Gemfile
+Metrics/PerceivedComplexity:
+  Max: 10
