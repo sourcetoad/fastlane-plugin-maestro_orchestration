@@ -1,7 +1,6 @@
 require 'fastlane/action'
 require 'fastlane_core/configuration/config_item'
 require_relative '../helper/maestro_orchestration_helper'
-require 'fileutils'
 
 module Fastlane
   module Actions
@@ -17,7 +16,7 @@ module Fastlane
           raise "Missing required parameters: #{missing_params.join(', ')}"
         end
 
-        Helper::MaestroOrchestrationHelper.clear_maestro_logs(params[:clear_maestro_logs])
+        Helper::MaestroOrchestrationHelper.clear_maestro_logs if params[:clear_maestro_logs]
 
         boot_ios_simulator(params)
         demo_mode(params)

@@ -41,9 +41,7 @@ module Fastlane
         booted
       end
 
-      def self.clear_maestro_logs(clear_logs)
-        return unless clear_logs
-
+      def self.clear_maestro_logs
         logs_path = File.expand_path("~/.maestro/tests")
 
         unless Dir.exist?(logs_path)
@@ -51,7 +49,7 @@ module Fastlane
           return
         end
 
-        UI.message("Clearing previous Maestro logs using Ruby...")
+        UI.message("Clearing previous Maestro logs using")
 
         # Handle file and directory removal separately
         Dir.glob(File.join(logs_path, "*")).each do |path|
