@@ -131,6 +131,18 @@ module Fastlane
 
         trigger(command: command)
       end
+
+      # Delete an existing AVD
+      def delete_avd(name:)
+        raise "AVD name is required" if name.nil? || name.empty?
+
+        command = [
+          "delete avd",
+          "-n #{name.shellescape}"
+        ].join(" ")
+
+        trigger(command: command)
+      end
     end
 
     class EmulatorHelper

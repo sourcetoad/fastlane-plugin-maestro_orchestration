@@ -68,6 +68,17 @@ module Fastlane
         UI.message("Waiting for all emulators to stop...")
         sleep(10)
 
+        # Check if there is an AVD with this name, if so, delete it
+        UI.message("Checking if AVD exists with name: #{params[:emulator_name]}...")
+        avd_exists = `#{avdmanager.avdmanager_path} list avd`.include?(params[:emulator_name])
+
+        if avd_exists
+          UI.message("AVD found, deleting existing AVD: #{params[:emulator_name]}...")
+          avdmanager.delete_avd(name: params[:emulator_name])
+        else
+          UI.message("No existing AVD found with that name.")
+        end
+
         UI.message("Setting up new Android emulator...")
         avdmanager.create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
 
@@ -81,8 +92,23 @@ module Fastlane
         unless booted
           UI.error("Emulator failed to boot after #{max_retries} attempts. Restarting ADB server...")
           adb.trigger(command: "kill-server")
+
+          # Shut down the current emulator, delete it, create a new one, and restart ADB server
+          UI.message("Shutting down current emulator and deleting the AVD...")
+          adb.trigger(command: "emu kill", serial: "emulator-#{params[:emulator_port]}")
+          sleep(5) # Ensure the emulator is killed
+          avdmanager.delete_avd(name: params[:emulator_name])
+
+          UI.message("Creating new AVD...")
+          avdmanager.create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
+
+          UI.message("Restarting ADB server...")
           adb.trigger(command: "start-server")
-          UI.message("ADB server restarted. Retrying boot process...")
+          UI.message("ADB server restarted. Starting new emulator...")
+
+          # Start the newly created emulator
+          emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
+          adb.trigger(command: "wait-for-device", serial: "emulator-#{params[:emulator_port]}")
 
           # Retry boot process after restarting ADB server
           booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, max_retries, "emulator-#{params[:emulator_port]}")
@@ -91,7 +117,7 @@ module Fastlane
         if booted
           UI.success("Emulator is online and fully booted!")
         else
-          UI.error("Emulator failed to boot even after restarting ADB server.")
+          UI.error("Emulator failed to boot even after restarting AVD and ADB server.")
           raise "Failed to boot emulator. Please check emulator logs and configuration."
         end
       end
