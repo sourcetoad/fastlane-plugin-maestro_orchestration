@@ -65,15 +65,30 @@ module Fastlane
         booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, max_retries, "emulator-#{params[:emulator_port]}")
       
         # Step 5: Retry if boot fails
-        unless booted
-          UI.error("Emulator failed to boot after retries. Restarting ADB server and re-creating emulator...")
-          Helper::MaestroOrchestrationHelper.handle_boot_failure(params, avdmanager, adb, emulator)
-          booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, max_retries, "emulator-#{params[:emulator_port]}")
+        max_boot_retries = 3
+        boot_attempts = 0
+
+        while boot_attempts < max_boot_retries && !booted
+          boot_attempts += 1
+        
+          unless booted
+            UI.error("Emulator failed to boot after retries. Attempt #{boot_attempts}/#{max_boot_retries}. Restarting ADB server and re-creating emulator...")
+            Helper::MaestroOrchestrationHelper.handle_boot_failure(params, avdmanager, adb, emulator)
+        
+            # Wait for the emulator to boot again
+            booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, max_retries, "emulator-#{params[:emulator_port]}")
+          end
+        
+          # Break early if the emulator is successfully booted
+          break if booted
         end
       
         # Step 6: Final check if emulator is booted
-        raise "Failed to boot emulator." unless booted
-        UI.success("Emulator is online and fully booted!")
+        if !booted
+          raise "Failed to boot the emulator after #{max_boot_retries} attempts. Please check your emulator setup."
+          Helper::MaestroOrchestrationHelper.stop_all_emulators(adb)
+        end
+        UI.success("Emulator successfully booted after #{boot_attempts} attempt(s).")
       end
 
       def self.demo_mode(params)
