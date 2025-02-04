@@ -50,76 +50,30 @@ module Fastlane
         emulator = Helper::EmulatorHelper.new
         adb = Helper::AdbHelper.new
         avdmanager = Helper::AvdHelper.new
-
-        UI.message("Stop all running emulators...")
-        devices = adb.load_all_devices
-        UI.success("Devices: #{devices}")
-
-        if devices.empty?
-          UI.message("No running emulators found.")
-        else
-          devices.each do |device|
-            UI.message("Stopping emulator: #{device.serial}")
-            adb.trigger(command: "emu kill", serial: device.serial)
-            sleep(10)
-            system("Stopped emulator: #{device.serial}")
-          end
-        end
-        UI.message("Waiting for all emulators to stop...")
-        sleep(10)
-
-        # Check if there is an AVD with this name, if so, delete it
-        UI.message("Checking if AVD exists with name: #{params[:emulator_name]}...")
-        avd_exists = `#{avdmanager.avdmanager_path} list avd`.include?(params[:emulator_name])
-
-        if avd_exists
-          UI.message("AVD found, deleting existing AVD: #{params[:emulator_name]}...")
-          avdmanager.delete_avd(name: params[:emulator_name])
-        else
-          UI.message("No existing AVD found with that name.")
-        end
-
-        UI.message("Setting up new Android emulator...")
-        avdmanager.create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
-
-        UI.message("Starting Android emulator...")
-        emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
-        adb.trigger(command: "wait-for-device", serial: "emulator-#{params[:emulator_port]}")
-
+      
+        # Step 1: Stop all running emulators
+        Helper::MaestroOrchestrationHelper.stop_all_emulators(adb)
+      
+        # Step 2: Check if AVD exists, delete if it does
+        avdmanager.handle_existing_avd(params[:emulator_name])
+      
+        # Step 3: Create and start the new emulator
+        avdmanager.create_and_start_emulator(params, emulator, adb)
+      
+        # Step 4: Wait for emulator to boot
         max_retries = 10
         booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, max_retries, "emulator-#{params[:emulator_port]}")
-
+      
+        # Step 5: Retry if boot fails
         unless booted
-          UI.error("Emulator failed to boot after #{max_retries} attempts. Restarting ADB server...")
-          adb.trigger(command: "kill-server")
-
-          # Shut down the current emulator, delete it, create a new one, and restart ADB server
-          UI.message("Shutting down current emulator and deleting the AVD...")
-          adb.trigger(command: "emu kill", serial: "emulator-#{params[:emulator_port]}")
-          sleep(5) # Ensure the emulator is killed
-          avdmanager.delete_avd(name: params[:emulator_name])
-
-          UI.message("Creating new AVD...")
-          avdmanager.create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
-
-          UI.message("Restarting ADB server...")
-          adb.trigger(command: "start-server")
-          UI.message("ADB server restarted. Starting new emulator...")
-
-          # Start the newly created emulator
-          emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
-          adb.trigger(command: "wait-for-device", serial: "emulator-#{params[:emulator_port]}")
-
-          # Retry boot process after restarting ADB server
+          UI.error("Emulator failed to boot after retries. Restarting ADB server and re-creating emulator...")
+          Helper::MaestroOrchestrationHelper.handle_boot_failure(params, avdmanager, adb, emulator)
           booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, max_retries, "emulator-#{params[:emulator_port]}")
         end
-
-        if booted
-          UI.success("Emulator is online and fully booted!")
-        else
-          UI.error("Emulator failed to boot even after restarting AVD and ADB server.")
-          raise "Failed to boot emulator. Please check emulator logs and configuration."
-        end
+      
+        # Step 6: Final check if emulator is booted
+        raise "Failed to boot emulator." unless booted
+        UI.success("Emulator is online and fully booted!")
       end
 
       def self.demo_mode(params)

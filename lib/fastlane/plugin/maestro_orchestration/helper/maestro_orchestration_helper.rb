@@ -10,8 +10,35 @@ module Fastlane
       # class methods that you define here become available in your action
       # as `Helper::MaestroOrchestrationHelper.your_method`
       #
-      def self.show_message
-        UI.message("Hello from the maestro_orchestration plugin helper!")
+      def self.stop_all_emulators(adb)
+        UI.message("Stop all running emulators...")
+        devices = adb.load_all_devices
+        UI.success("Devices: #{devices}")
+
+        devices.each do |device|
+          UI.message("Stopping emulator: #{device.serial}")
+          adb.trigger(command: "emu kill", serial: device.serial)
+          sleep(10)
+        end
+        UI.message("Waiting for all emulators to stop...")
+        sleep(10)
+      end
+
+      def self.handle_boot_failure(params, avdmanager, adb, emulator)
+        adb.trigger(command: "kill-server")
+        adb.trigger(command: "emu kill", serial: "emulator-#{params[:emulator_port]}")
+        sleep(5)
+        avdmanager.delete_avd(name: params[:emulator_name])
+
+        UI.message("Creating new AVD...")
+        avdmanager.create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
+
+        UI.message("Restarting ADB server...")
+        adb.trigger(command: "start-server")
+        UI.message("ADB server restarted. Starting new emulator...")
+
+        emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
+        adb.trigger(command: "wait-for-device", serial: "emulator-#{params[:emulator_port]}")
       end
 
       def self.wait_for_emulator_to_boot(adb, max_retries, serial)
@@ -142,6 +169,29 @@ module Fastlane
         ].join(" ")
 
         trigger(command: command)
+      end
+
+      # Handle existing AVD, deleting to ensure fresh setup
+      def handle_existing_avd(emulator_name)
+        UI.message("Checking if AVD exists with name: #{emulator_name}...")
+        avd_exists = `#{avdmanager_path} list avd`.include?(emulator_name)
+
+        if avd_exists
+          UI.message("AVD found, deleting existing AVD: #{emulator_name}...")
+          delete_avd(name: emulator_name)
+        else
+          UI.message("No existing AVD found with that name.")
+        end
+      end
+
+      # Creates an AVD and starts an emulator
+      def create_and_start_emulator(params, emulator, adb)
+        UI.message("Setting up new Android emulator...")
+        create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
+
+        UI.message("Starting Android emulator...")
+        emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
+        adb.trigger(command: "wait-for-device", serial: "emulator-#{params[:emulator_port]}")
       end
     end
 
