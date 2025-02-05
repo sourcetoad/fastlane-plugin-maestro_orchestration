@@ -227,7 +227,8 @@ module Fastlane
           "-no-boot-anim",
           "-no-snapshot",
           "-no-audio",
-          "> /dev/null 2>&1 &"
+          "> emulator_logs 2>&1 &"
+          # "> /dev/null 2>&1 &"
         ].join(" ")
 
         UI.message("Starting emulator #{name} on port #{port}...")
