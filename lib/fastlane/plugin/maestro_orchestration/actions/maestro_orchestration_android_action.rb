@@ -113,23 +113,14 @@ module Fastlane
         adb.load_all_devices
         serial = adb.devices.first.serial
 
-        # Try to find the APK file in the release output directory
+        UI.message("Generating 'assembleRelease' build...")
+        # Trigger the 'assembleRelease' build
+        system("./gradlew assembleRelease")
+        # After building, try to find the APK file in the release output directory
         apk_path = Dir["app/build/outputs/apk/release/*.apk"].first
-
-        # If APK is not found, run 'assembleRelease' build
+        # If still not found after building, raise an error
         if apk_path.nil?
-          UI.message("APK not found. Running 'assembleRelease' build...")
-
-          # Trigger the 'assembleRelease' build
-          system("./gradlew assembleRelease")
-
-          # After building, check again for the APK
-          apk_path = Dir["app/build/outputs/apk/release/*.apk"].first
-
-          # If still not found after building, raise an error
-          if apk_path.nil?
-            UI.user_error!("Error: APK file not found in build outputs even after running assembleRelease.")
-          end
+          UI.user_error!("Error: APK file not found in build outputs even after running assembleRelease.")
         end
 
         UI.message("Found APK file at: #{apk_path}")
