@@ -119,10 +119,10 @@ module Fastlane
         # If APK is not found, run 'assembleRelease' build
         if apk_path.nil?
           UI.message("APK not found. Running 'assembleRelease' build...")
-          
+
           # Trigger the 'assembleRelease' build
           system("./gradlew assembleRelease")
-          
+
           # After building, check again for the APK
           apk_path = Dir["app/build/outputs/apk/release/*.apk"].first
 
@@ -135,7 +135,6 @@ module Fastlane
         UI.message("Found APK file at: #{apk_path}")
         adb.trigger(command: "install -r '#{apk_path}'", serial: serial)
         UI.success("APK installed on Android emulator.")
-
       end
 
       def self.description
