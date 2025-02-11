@@ -7,7 +7,7 @@ module Fastlane
   module Actions
     class MaestroOrchestrationAndroidAction < Action
       def self.run(params)
-        required_params = [:emulator_package, :emulator_device, :maestro_flow_file]
+        required_params = [:maestro_flow_file]
         missing_params = required_params.select { |param| params[param].nil? }
 
         if missing_params.any?
@@ -44,51 +44,6 @@ module Fastlane
         sleep(5)
         adb.trigger(command: "emu kill", serial: devices.first.serial)
         UI.success("Android emulator killed. Process finished.")
-      end
-
-      def self.setup_emulator(params)
-        emulator = Helper::EmulatorHelper.new
-        adb = Helper::AdbHelper.new
-        avdmanager = Helper::AvdHelper.new
-
-        # Step 1: Stop all running emulators
-        Helper::MaestroOrchestrationHelper.stop_all_emulators(adb)
-
-        # Step 2: Check if AVD exists, delete if it does
-        avdmanager.handle_existing_avd(params[:emulator_name])
-
-        # Step 3: Create and start the new emulator
-        avdmanager.create_and_start_emulator(params, emulator, adb)
-
-        # Step 4: Wait for emulator to boot
-        max_retries = 10
-        booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, max_retries, "emulator-#{params[:emulator_port]}")
-
-        # Step 5: Retry if boot fails
-        max_boot_retries = 3
-        boot_attempts = 0
-
-        while boot_attempts < max_boot_retries && !booted
-          boot_attempts += 1
-
-          unless booted
-            UI.error("Emulator failed to boot after retries. Attempt #{boot_attempts}/#{max_boot_retries}. Restarting ADB server and re-creating emulator...")
-            Helper::MaestroOrchestrationHelper.handle_boot_failure(params, avdmanager, adb, emulator)
-
-            # Wait for the emulator to boot again
-            booted = Helper::MaestroOrchestrationHelper.wait_for_emulator_to_boot(adb, max_retries, "emulator-#{params[:emulator_port]}")
-          end
-
-          # Break early if the emulator is successfully booted
-          break if booted
-        end
-
-        # Step 6: Final check if emulator is booted
-        unless booted
-          Helper::MaestroOrchestrationHelper.stop_all_emulators(adb)
-          raise "Failed to boot the emulator after #{max_boot_retries} attempts. Please check your emulator setup."
-        end
-        UI.success("Emulator successfully booted after #{boot_attempts} attempt(s).")
       end
 
       def self.demo_mode(params)
@@ -143,41 +98,6 @@ module Fastlane
             verify_block: proc do |value|
               UI.user_error!("No ANDROID_SDK_DIR given, pass using `sdk_dir: 'sdk_dir'`") unless value && !value.empty?
             end
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :emulator_name,
-            env_name: "MAESTRO_AVD_NAME",
-            description: "Name of the AVD",
-            default_value: "Maestro_Android_Emulator",
-            optional: true
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :emulator_package,
-            env_name: "MAESTRO_AVD_PACKAGE",
-            description: "The selected system image of the emulator",
-            default_value: "system-images;android-35;google_apis_playstore;arm64-v8a",
-            optional: true
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :emulator_device,
-            env_name: "MAESTRO_AVD_DEVICE",
-            description: "Device",
-            default_value: "pixel_7_pro",
-            optional: true
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :location,
-            env_name: "MAESTRO_AVD_LOCATION",
-            description: "Set location of the emulator '<longitude> <latitude>'",
-            default_value: "28.0362979, -82.4930012",
-            optional: true
-          ),
-          FastlaneCore::ConfigItem.new(
-            key: :emulator_port,
-            env_name: "MAESTRO_AVD_PORT",
-            description: "Port of the emulator",
-            default_value: "5554",
-            optional: true
           ),
           FastlaneCore::ConfigItem.new(
             key: :maestro_flow_file,
