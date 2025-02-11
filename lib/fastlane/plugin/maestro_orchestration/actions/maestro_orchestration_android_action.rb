@@ -21,8 +21,7 @@ module Fastlane
 
         adb = Helper::AdbHelper.new
 
-        setup_emulator(params)
-        sleep(5)
+        sleep(5) # Give time emulator to boot
         demo_mode(params)
         install_android_app(params)
 
