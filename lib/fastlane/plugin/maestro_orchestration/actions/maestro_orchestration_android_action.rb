@@ -126,6 +126,8 @@ module Fastlane
         UI.message("Found APK file at: #{apk_path}")
         adb.trigger(command: "install -r '#{apk_path}'", serial: serial)
         UI.success("APK installed on Android emulator.")
+        UI.message("Installed packages:\n")
+        adb.trigger(command: "shell pm list packages", serial: serial)
       end
 
       def self.description
