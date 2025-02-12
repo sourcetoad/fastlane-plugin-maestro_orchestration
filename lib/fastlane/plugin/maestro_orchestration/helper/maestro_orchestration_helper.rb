@@ -189,6 +189,9 @@ module Fastlane
         UI.message("Setting up new Android emulator...")
         create_avd(name: params[:emulator_name], package: params[:emulator_package], device: params[:emulator_device])
 
+        UI.message("Debug statement to check created AVDs")
+        UI.message(`#{avdmanager_path} list avd`)
+
         UI.message("Starting Android emulator...")
         emulator.start_emulator(name: params[:emulator_name], port: params[:emulator_port])
         adb.trigger(command: "wait-for-device", serial: "emulator-#{params[:emulator_port]}")
@@ -227,7 +230,8 @@ module Fastlane
           "-no-boot-anim",
           "-no-snapshot",
           "-no-audio",
-          "> /dev/null 2>&1 &"
+          "> emulator_logs 2>&1 &"
+          # "> /dev/null 2>&1 &"
         ].join(" ")
 
         UI.message("Starting emulator #{name} on port #{port}...")
