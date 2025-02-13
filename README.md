@@ -28,15 +28,12 @@ Executes Maestro test suites within your Fastlane lanes, facilitating automated 
 | `device_type`       | `MAESTRO_IOS_DEVICE`         | The iOS simulator device type for new simulator (e.g., iPhone #, iPad, etc...). <br> **Default value:** 'com.apple.CoreSimulator.SimDeviceType.iPhone-15'|
 
 ## Parameters `Android`
-
+For Android, we utilize the [Android Emulator Runner](https://github.com/ReactiveCircus/android-emulator-runner
+) by ReactiveCircus, which efficiently manages the setup and initialization of the emulator.
 | Parameter           | Env Name                           | Notes                                                                                                                                  |
 | ------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `sdk_dir`           | `MAESTRO_ANDROID_SDK_DIR`          | Path to the Android SDK DIR. <br> **Required**              `ENV["ANDROID_HOME"]`, `ENV["ANDROID_SDK_ROOT"]`, `~/Library/Android/sdk`  |
 | `maestro_flow_file` | `MAESTRO_IOS_FLOW_FILE`            | The path to the Maestro flows YAML file.  <br> **Required**                                                                            |
-| `emulator_name`     | `MAESTRO_AVD_NAME`                 | Name of the AVD. <br>  **Default value:**    'Maestro\_Android\_Emulator'                                                              |
-| `emulator_package`  | `MAESTRO_AVD_PACKAGE`              | The selected system image of the emulator. <br> **Default value:** 'system-images;android-35;google_apis_playstore;arm64-v8a'          |
-| `emulator_device`   | `MAESTRO_AVD_DEVICE`               | Type of android device. <br> **Default value:** 'pixel_7_pro'                                                                          |
-| `emulator_port`     | `MAESTRO_AVD_PORT`                 | Port of the emulator. <br>  **Default value:** 5554                                                                                    |
 
 ### 2. `maestro_orchestartion_s3_upload`
 Uploads a folder of files (such as screenshots) to an S3 bucket, organizing them based on the app version, theme, and device type.
