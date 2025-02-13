@@ -230,7 +230,11 @@ module Fastlane
           "-no-boot-anim",
           "-no-snapshot",
           "-no-audio",
-          "> emulator_logs 2>&1 &"
+          "-no-window",
+          "-gpu swiftshader_indirect",
+          "-verbose",
+          "-show-kernel",
+          "> emulator-log.txt 2>&1 &"
           # "> /dev/null 2>&1 &"
         ].join(" ")
 
