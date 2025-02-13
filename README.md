@@ -28,8 +28,8 @@ Executes Maestro test suites within your Fastlane lanes, facilitating automated 
 | `device_type`       | `MAESTRO_IOS_DEVICE`         | The iOS simulator device type for new simulator (e.g., iPhone #, iPad, etc...). <br> **Default value:** 'com.apple.CoreSimulator.SimDeviceType.iPhone-15'|
 
 ## Parameters `Android`
-For Android OS we are relying `android-emulator-runner` github action to spin up emulator instance, therefore no additional parameters are required. For more info: https://github.com/ReactiveCircus/android-emulator-runner
-
+For Android, we utilize the [Android Emulator Runner](https://github.com/ReactiveCircus/android-emulator-runner
+) by ReactiveCircus, which efficiently manages the setup and initialization of the emulator.
 | Parameter           | Env Name                           | Notes                                                                                                                                  |
 | ------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `sdk_dir`           | `MAESTRO_ANDROID_SDK_DIR`          | Path to the Android SDK DIR. <br> **Required**              `ENV["ANDROID_HOME"]`, `ENV["ANDROID_SDK_ROOT"]`, `~/Library/Android/sdk`  |
