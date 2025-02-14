@@ -67,6 +67,9 @@ module Fastlane
         adb.load_all_devices
         serial = adb.devices.first.serial
 
+        UI.message("Cleaning previous build outputs...")
+        system("./gradlew clean")
+
         UI.message("Generating 'assembleRelease' build...")
         # Trigger the 'assembleRelease' build
         system("./gradlew assembleRelease")
