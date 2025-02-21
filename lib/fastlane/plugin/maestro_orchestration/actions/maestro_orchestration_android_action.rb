@@ -41,8 +41,8 @@ module Fastlane
         UI.message("Exit demo mode and kill Android emulator...")
         adb.trigger(command: "shell am broadcast -a com.android.systemui.demo -e command exit", serial: devices.first.serial)
         sleep(5)
-        adb.trigger(command: "emu kill", serial: devices.first.serial)
-        UI.success("Android emulator killed. Process finished.")
+        # adb.trigger(command: "emu kill", serial: devices.first.serial)
+        # UI.success("Android emulator killed. Process finished.")
       end
 
       def self.demo_mode(params)
