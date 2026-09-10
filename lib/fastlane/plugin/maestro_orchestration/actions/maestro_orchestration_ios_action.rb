@@ -27,7 +27,7 @@ module Fastlane
         simulators_list = `xcrun simctl list devices`.strip
         device_status = simulators_list.match(/#{Regexp.quote(params[:simulator_name])}.*\(([^)]+)\) \(([^)]+)\)/)
         device_id = device_status[1]
-        `maestro --device #{device_id} test #{params[:maestro_flow_file]}`
+        sh("maestro --device #{device_id} test #{params[:maestro_flow_file]}")
         UI.success("Finished Maestro tests on iOS.")
 
         UI.message("Killing iOS simulator...")
