@@ -40,6 +40,15 @@ describe Fastlane::Actions::MaestroOrchestrationIosAction do
   end
 end
 
+describe Fastlane::Actions::MaestroOrchestrationApiRequestAction do
+  describe 'Available Options' do
+    it 'marks hmac_secret as sensitive' do
+      hmac_secret_option = Fastlane::Actions::MaestroOrchestrationApiRequestAction.available_options.find { |option| option.key == :hmac_secret }
+      expect(hmac_secret_option.sensitive).to be true
+    end
+  end
+end
+
 describe Fastlane::Actions::MaestroOrchestrationAndroidAction do
   describe 'Parameter Passing' do
     it "makes sure that all the parameters are passed" do

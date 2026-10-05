@@ -117,6 +117,7 @@ module Fastlane
           env_name: "MAESTRO_SCREENSHOTS_HMAC_SECRET",
           description: "The HMAC secret used to sign the payload",
           optional: false,
+          sensitive: true,
           verify_block: proc do |value|
             UI.user_error!("You must provide a valid HMAC secret using the `hmac_secret` parameter.") unless value && !value.strip.empty?
           end
