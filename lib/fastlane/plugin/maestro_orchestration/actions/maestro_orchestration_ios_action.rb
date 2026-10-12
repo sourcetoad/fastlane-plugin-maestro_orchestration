@@ -70,8 +70,15 @@ module Fastlane
         system("xcrun simctl boot '#{new_device_id}'")
 
         UI.message("Waiting for the simulator to fully boot...")
+        max_retries = 30
+        retries = 0
         until `xcrun simctl list devices`.include?("#{device_name} (#{new_device_id}) (Booted)")
-          UI.message("Waiting for the simulator to boot...")
+          if retries >= max_retries
+            UI.user_error!("Simulator '#{device_name}' did not boot within the expected time.")
+          end
+
+          retries += 1
+          UI.message("Waiting for the simulator to boot... (attempt #{retries}/#{max_retries})")
           sleep(10)
         end
 
